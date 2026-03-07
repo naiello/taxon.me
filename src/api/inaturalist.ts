@@ -6,11 +6,55 @@ const DEAD_TERM_VALUE_ID = 19;
 const EVIDENCE_OF_PRESENCE_TERM_ID = 22;
 const ORGANISM_TERM_VALUE_ID = 24;
 
-interface ApiResponse {
-    results: Record<string, unknown>[];
+interface ApiResponse<T> {
+    results: T[];
     total_results?: number;
     page?: number;
     per_page?: number;
+}
+
+interface ApiPlaceResult {
+    id: number;
+    display_name: string;
+    admin_level?: number;
+    location: string;
+    bbox_area?: number;
+    geometry_geojson?: object;
+}
+
+interface ApiTaxonResult {
+    id: number;
+    name: string;
+    preferred_common_name?: string;
+    rank: string;
+}
+
+interface ApiAnnotation {
+    controlled_attribute?: {id?: number};
+    controlled_value?: {id?: number};
+}
+
+interface ApiPhotoResult {
+    id: number;
+    url: string;
+    attribution: string;
+    original_dimensions?: {width: number; height: number};
+}
+
+interface ApiObservationTaxon extends ApiTaxonResult {
+    iconic_taxon_name?: string;
+    ancestor_ids?: number[];
+}
+
+interface ApiObservationResult {
+    id: number;
+    photos: ApiPhotoResult[];
+    taxon?: ApiObservationTaxon;
+    user?: {login: string; name?: string | null};
+    place_guess?: string;
+    location?: string;
+    observed_on_string?: string;
+    annotations?: ApiAnnotation[];
 }
 
 export function getPhotoUrl(
@@ -28,13 +72,13 @@ export async function searchPlaces(query: string): Promise<Place[]> {
     if (!res.ok) {
         throw new Error(`Places search failed: ${res.status}`);
     }
-    const data = (await res.json()) as ApiResponse;
+    const data = (await res.json()) as ApiResponse<ApiPlaceResult>;
     return data.results.map((p) => ({
-        id: p.id as number,
-        display_name: p.display_name as string,
-        admin_level: (p.admin_level as number | null | undefined) ?? null,
-        location: (p.location as string | undefined) ?? "",
-        bbox_area: p.bbox_area as number | undefined,
+        id: p.id,
+        display_name: p.display_name,
+        admin_level: p.admin_level,
+        location: p.location ?? "",
+        bbox_area: p.bbox_area,
         has_geometry: p.geometry_geojson != null,
     }));
 }
@@ -51,12 +95,12 @@ export async function searchTaxa(query: string, taxonId?: number): Promise<Taxon
     if (!res.ok) {
         throw new Error(`Taxa search failed: ${res.status}`);
     }
-    const data = (await res.json()) as ApiResponse;
+    const data = (await res.json()) as ApiResponse<ApiTaxonResult>;
     return data.results.map((t) => ({
-        id: t.id as number,
-        name: t.name as string,
-        preferred_common_name: (t.preferred_common_name as string) ?? undefined,
-        rank: (t.rank as string) ?? "",
+        id: t.id,
+        name: t.name,
+        preferred_common_name: t.preferred_common_name,
+        rank: t.rank ?? "",
     }));
 }
 
@@ -92,13 +136,13 @@ async function fetchTaxaByIds(ids: number[]): Promise<Map<number, TaxonAncestor>
         if (!res.ok) {
             continue;
         }
-        const data = (await res.json()) as ApiResponse;
+        const data = (await res.json()) as ApiResponse<ApiTaxonResult>;
         for (const t of data.results) {
-            map.set(t.id as number, {
-                id: t.id as number,
-                name: t.name as string,
-                rank: (t.rank as string) ?? "",
-                preferred_common_name: (t.preferred_common_name as string) ?? undefined,
+            map.set(t.id, {
+                id: t.id,
+                name: t.name,
+                rank: t.rank ?? "",
+                preferred_common_name: t.preferred_common_name,
             });
         }
     }
@@ -133,13 +177,10 @@ export async function fetchObservations(params: FetchObservationsParams): Promis
     if (!res.ok) {
         throw new Error(`Observations fetch failed: ${res.status}`);
     }
-    const data = (await res.json()) as ApiResponse;
+    const data = (await res.json()) as ApiResponse<ApiObservationResult>;
 
     const liveResults = data.results.filter((raw) => {
-        const annotations = raw.annotations as
-            | {controlled_attribute?: {id?: number}; controlled_value?: {id?: number}}[]
-            | undefined;
-        const evidenceAnnotation = annotations?.find(
+        const evidenceAnnotation = raw.annotations?.find(
             (a) => a.controlled_attribute?.id === EVIDENCE_OF_PRESENCE_TERM_ID,
         );
         return evidenceAnnotation == null || evidenceAnnotation.controlled_value?.id === ORGANISM_TERM_VALUE_ID;
@@ -176,33 +217,30 @@ export async function fetchObservations(params: FetchObservationsParams): Promis
     };
 }
 
-function mapObservation(raw: Record<string, unknown>): Observation {
-    const photos = (raw.photos as Record<string, unknown>[]) ?? [];
-    const taxon = raw.taxon as Record<string, unknown> | null;
-    const user = raw.user as Record<string, unknown> | null;
+function mapObservation(raw: ApiObservationResult): Observation {
     return {
-        id: raw.id as number,
-        photos: photos.map(
+        id: raw.id,
+        photos: (raw.photos ?? []).map(
             (p): Photo => ({
-                id: p.id as number,
-                url: p.url as string,
-                attribution: (p.attribution as string) ?? "",
-                original_dimensions: p.original_dimensions as {width: number; height: number} | undefined,
+                id: p.id,
+                url: p.url,
+                attribution: p.attribution ?? "",
+                original_dimensions: p.original_dimensions,
             }),
         ),
-        taxon: taxon
+        taxon: raw.taxon
             ? {
-                  id: taxon.id as number,
-                  name: taxon.name as string,
-                  preferred_common_name: (taxon.preferred_common_name as string) ?? undefined,
-                  iconic_taxon_name: (taxon.iconic_taxon_name as string) ?? undefined,
-                  rank: (taxon.rank as string) ?? "",
-                  ancestor_ids: (taxon.ancestor_ids as number[]) ?? undefined,
+                  id: raw.taxon.id,
+                  name: raw.taxon.name,
+                  preferred_common_name: raw.taxon.preferred_common_name,
+                  iconic_taxon_name: raw.taxon.iconic_taxon_name,
+                  rank: raw.taxon.rank ?? "",
+                  ancestor_ids: raw.taxon.ancestor_ids,
               }
-            : null,
-        user: user ? {login: user.login as string, name: (user.name as string) ?? null} : null,
-        place_guess: (raw.place_guess as string) ?? null,
-        location: (raw.location as string) ?? null,
-        observed_on_string: (raw.observed_on_string as string) ?? null,
+            : undefined,
+        user: raw.user ? {login: raw.user.login, name: raw.user.name ?? undefined} : undefined,
+        place_guess: raw.place_guess,
+        location: raw.location,
+        observed_on_string: raw.observed_on_string,
     };
 }

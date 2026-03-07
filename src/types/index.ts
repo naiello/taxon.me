@@ -28,23 +28,23 @@ export type ViewMode = "browse" | "quiz";
 
 export interface ObservationUser {
     login: string;
-    name: string | null;
+    name?: string;
 }
 
 export interface Observation {
     id: number;
     photos: Photo[];
-    taxon: Taxon | null;
-    user: ObservationUser | null;
-    place_guess: string | null;
-    location: string | null;
-    observed_on_string: string | null;
+    taxon?: Taxon;
+    user?: ObservationUser;
+    place_guess?: string;
+    location?: string;
+    observed_on_string?: string;
 }
 
 export interface Place {
     id: number;
     display_name: string;
-    admin_level: number | null;
+    admin_level?: number;
     location: string; // "lat,lng"
     bbox_area?: number;
     has_geometry: boolean;

@@ -1,24 +1,24 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 
-import { useObservations } from "../hooks/useObservations";
-import type { GuessRoundOutcome, SearchParams, ViewMode } from "../types";
-import { PhotoCarousel } from "./PhotoCarousel";
-import { QuizCard } from "./QuizCard";
-import { TaxonLineage } from "./TaxonLineage";
+import {useObservations} from "../hooks/useObservations";
+import type {GuessRoundOutcome, SearchParams, ViewMode} from "../types";
+import {PhotoCarousel} from "./PhotoCarousel";
+import {QuizCard} from "./QuizCard";
+import {TaxonLineage} from "./TaxonLineage";
 
 interface Props {
     searchParams: SearchParams;
-    initialMode?: ViewMode,
+    initialMode?: ViewMode;
     onBack: () => void;
 }
 
-export function ObservationFeed({ searchParams, initialMode = "browse", onBack }: Props) {
-    const { observations, loading, error, hasMore, loadMore } = useObservations(searchParams);
+export function ObservationFeed({searchParams, initialMode = "browse", onBack}: Props) {
+    const {observations, loading, error, hasMore, loadMore} = useObservations(searchParams);
     const containerRef = useRef<HTMLDivElement>(null);
 
     const [quizMode, setQuizMode] = useState(initialMode === "quiz");
     const [quizIndex, setQuizIndex] = useState(0);
-    const [score, setScore] = useState({ correct: 0, incorrect: 0, skipped: 0 });
+    const [score, setScore] = useState({correct: 0, incorrect: 0, skipped: 0});
 
     const locationLabel =
         searchParams.type === "place"
@@ -52,7 +52,7 @@ export function ObservationFeed({ searchParams, initialMode = "browse", onBack }
         if (!el) {
             return;
         }
-        el.addEventListener("scroll", handleScroll, { passive: true });
+        el.addEventListener("scroll", handleScroll, {passive: true});
         return () => el.removeEventListener("scroll", handleScroll);
     }, [handleScroll, quizMode]);
 
@@ -89,7 +89,7 @@ export function ObservationFeed({ searchParams, initialMode = "browse", onBack }
     }, [quizMode]);
 
     const handleOutcome = useCallback((outcome: GuessRoundOutcome) => {
-        setScore((prev) => ({ ...prev, [outcome]: prev[outcome] + 1 }));
+        setScore((prev) => ({...prev, [outcome]: prev[outcome] + 1}));
     }, []);
 
     const handleNext = useCallback(() => {
@@ -131,15 +131,17 @@ export function ObservationFeed({ searchParams, initialMode = "browse", onBack }
                 <div className="flex gap-1 bg-neutral-800 rounded-lg p-1 shrink-0">
                     <button
                         onClick={() => quizMode && handleToggleMode()}
-                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${!quizMode ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white"
-                            }`}
+                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                            !quizMode ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white"
+                        }`}
                     >
                         Browse
                     </button>
                     <button
                         onClick={() => !quizMode && handleToggleMode()}
-                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${quizMode ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white"
-                            }`}
+                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                            quizMode ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white"
+                        }`}
                     >
                         Quiz
                     </button>
@@ -170,7 +172,7 @@ export function ObservationFeed({ searchParams, initialMode = "browse", onBack }
             <div
                 ref={containerRef}
                 className={`flex-1 overflow-y-auto ${quizMode ? "hidden" : ""}`}
-                style={{ scrollSnapType: "y mandatory" }}
+                style={{scrollSnapType: "y mandatory"}}
             >
                 {error && (
                     <div className="h-full flex items-center justify-center text-red-400 px-4 text-center">{error}</div>
@@ -243,7 +245,7 @@ export function ObservationFeed({ searchParams, initialMode = "browse", onBack }
                 {loading && (
                     <div
                         className="flex items-center justify-center text-neutral-500"
-                        style={{ height: observations.length === 0 ? "100%" : "80px" }}
+                        style={{height: observations.length === 0 ? "100%" : "80px"}}
                     >
                         <div className="animate-pulse">Loading observations...</div>
                     </div>

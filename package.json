@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "prettier --check . && eslint --flag unstable_ts_config . && tsc -b && vite build",
+        "build": "prettier --check . && eslint . && tsc -b && vite build",
         "lint": "eslint --fix .",
         "format": "prettier --write .",
         "format:check": "prettier --check .",

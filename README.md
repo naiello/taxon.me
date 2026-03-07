@@ -7,7 +7,7 @@ using data from [iNaturalist](https://inaturalist.org).
 
 Start a local webserver with `npm run dev`. Access the development site at http://127.0.0.1:5173.
 
-The site runs entirely within the browser, interacting with the [iNaturalist API](https://api.inaturalist.org/v1/docs) 
+The site runs entirely within the browser, interacting with the [iNaturalist API](https://api.inaturalist.org/v1/docs)
 directly. If making changes locally, please read the API terms of use and make sure to stay within the limits described.
 
 ## Support iNaturalist
