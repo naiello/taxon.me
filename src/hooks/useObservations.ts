@@ -18,6 +18,7 @@ export function useObservations(searchParams: SearchParams | null): UseObservati
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const [totalResults, setTotalResults] = useState(0);
+    const [fetchedCount, setFetchedCount] = useState(0);
     const [initialized, setInitialized] = useState(false);
     const [currentParams, setCurrentParams] = useState<SearchParams | null>(null);
 
@@ -28,6 +29,7 @@ export function useObservations(searchParams: SearchParams | null): UseObservati
             setObservations([]);
             setPage(1);
             setTotalResults(0);
+            setFetchedCount(0);
             setInitialized(false);
             setError(null);
         }
@@ -57,6 +59,7 @@ export function useObservations(searchParams: SearchParams | null): UseObservati
                     append ? [...prev, ..._.shuffle(result.observations)] : _.shuffle(result.observations),
                 );
                 setTotalResults(result.total_results);
+                setFetchedCount((prev) => (append ? prev + result.raw_count : result.raw_count));
                 setPage(pageNum);
             } catch (e) {
                 setError(e instanceof Error ? e.message : "Failed to fetch observations");
@@ -73,7 +76,7 @@ export function useObservations(searchParams: SearchParams | null): UseObservati
         void load(1, false);
     }
 
-    const hasMore = observations.length < totalResults;
+    const hasMore = fetchedCount < totalResults;
 
     const loadMore = useCallback(() => {
         if (hasMore && !loading) {

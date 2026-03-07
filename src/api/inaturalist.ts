@@ -117,6 +117,7 @@ interface FetchObservationsParams {
 interface FetchObservationsResult {
     observations: Observation[];
     total_results: number;
+    raw_count: number;
     page: number;
     per_page: number;
 }
@@ -157,8 +158,6 @@ export async function fetchObservations(params: FetchObservationsParams): Promis
         page: String(params.page ?? 1),
         order: "desc",
         order_by: "created_at",
-        term_id: String(ALIVE_OR_DEAD_TERM_ID),
-        without_term_value_id: String(DEAD_TERM_VALUE_ID),
     });
 
     if (params.place_id) {
@@ -180,6 +179,10 @@ export async function fetchObservations(params: FetchObservationsParams): Promis
     const data = (await res.json()) as ApiResponse<ApiObservationResult>;
 
     const liveResults = data.results.filter((raw) => {
+        const aliveDead = raw.annotations?.find((a) => a.controlled_attribute?.id === ALIVE_OR_DEAD_TERM_ID);
+        if (aliveDead != null && aliveDead.controlled_value?.id === DEAD_TERM_VALUE_ID) {
+            return false;
+        }
         const evidenceAnnotation = raw.annotations?.find(
             (a) => a.controlled_attribute?.id === EVIDENCE_OF_PRESENCE_TERM_ID,
         );
@@ -212,6 +215,7 @@ export async function fetchObservations(params: FetchObservationsParams): Promis
     return {
         observations,
         total_results: data.total_results ?? 0,
+        raw_count: data.results.length,
         page: data.page ?? params.page ?? 1,
         per_page: data.per_page ?? params.per_page ?? 20,
     };

@@ -56,6 +56,22 @@ export function ObservationFeed({searchParams, initialMode = "browse", onBack}: 
         return () => el.removeEventListener("scroll", handleScroll);
     }, [handleScroll, quizMode]);
 
+    // After each load, auto-fetch the next page if filtered results leave fewer
+    // than 5 cards from the end (e.g. heavy client-side filtering).
+    useEffect(() => {
+        if (loading || !hasMore || quizMode) {
+            return;
+        }
+        const el = containerRef.current;
+        if (!el) {
+            return;
+        }
+        const cardsFromEnd = (el.scrollHeight - el.scrollTop - el.clientHeight) / el.clientHeight;
+        if (cardsFromEnd < 5) {
+            loadMore();
+        }
+    }, [loading, hasMore, loadMore, quizMode]);
+
     // Keep a ref so the sync effect can read quizIndex without re-running on every advance
     const quizIndexRef = useRef(quizIndex);
     useEffect(() => {
