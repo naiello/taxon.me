@@ -23,6 +23,8 @@ export interface Taxon {
 }
 
 export type GuessResult = "correct" | "wrong" | "partial";
+export type GuessRoundOutcome = "correct" | "incorrect" | "skipped";
+export type ViewMode = "browse" | "quiz";
 
 export interface ObservationUser {
     login: string;

@@ -2,6 +2,13 @@ import type {Observation, Photo, Place, TaxonAncestor, TaxonSuggestion} from "..
 
 const BASE_URL = "https://api.inaturalist.org/v1";
 
+interface ApiResponse {
+    results: Record<string, unknown>[];
+    total_results?: number;
+    page?: number;
+    per_page?: number;
+}
+
 export function getPhotoUrl(
     url: string,
     size: "square" | "small" | "medium" | "large" | "original" = "medium",
@@ -17,13 +24,13 @@ export async function searchPlaces(query: string): Promise<Place[]> {
     if (!res.ok) {
         throw new Error(`Places search failed: ${res.status}`);
     }
-    const data = await res.json();
-    return data.results.map((p: Record<string, unknown>) => ({
-        id: p.id,
-        display_name: p.display_name,
-        admin_level: p.admin_level ?? null,
-        location: p.location ?? "",
-        bbox_area: p.bbox_area ?? undefined,
+    const data = (await res.json()) as ApiResponse;
+    return data.results.map((p) => ({
+        id: p.id as number,
+        display_name: p.display_name as string,
+        admin_level: (p.admin_level as number | null | undefined) ?? null,
+        location: (p.location as string | undefined) ?? "",
+        bbox_area: p.bbox_area as number | undefined,
         has_geometry: p.geometry_geojson != null,
     }));
 }
@@ -40,8 +47,8 @@ export async function searchTaxa(query: string, taxonId?: number): Promise<Taxon
     if (!res.ok) {
         throw new Error(`Taxa search failed: ${res.status}`);
     }
-    const data = await res.json();
-    return data.results.map((t: Record<string, unknown>) => ({
+    const data = (await res.json()) as ApiResponse;
+    return data.results.map((t) => ({
         id: t.id as number,
         name: t.name as string,
         preferred_common_name: (t.preferred_common_name as string) ?? undefined,
@@ -81,8 +88,8 @@ async function fetchTaxaByIds(ids: number[]): Promise<Map<number, TaxonAncestor>
         if (!res.ok) {
             continue;
         }
-        const data = await res.json();
-        for (const t of data.results as Record<string, unknown>[]) {
+        const data = (await res.json()) as ApiResponse;
+        for (const t of data.results) {
             map.set(t.id as number, {
                 id: t.id as number,
                 name: t.name as string,
@@ -120,7 +127,7 @@ export async function fetchObservations(params: FetchObservationsParams): Promis
     if (!res.ok) {
         throw new Error(`Observations fetch failed: ${res.status}`);
     }
-    const data = await res.json();
+    const data = (await res.json()) as ApiResponse;
 
     const observations: Observation[] = data.results.map(mapObservation);
 
@@ -147,7 +154,7 @@ export async function fetchObservations(params: FetchObservationsParams): Promis
 
     return {
         observations,
-        total_results: data.total_results,
+        total_results: data.total_results ?? 0,
         page: data.page ?? params.page ?? 1,
         per_page: data.per_page ?? params.per_page ?? 20,
     };

@@ -1,24 +1,27 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 
-import type {GuessResult, Observation, PartialGuessRecord, TaxonSuggestion} from "../types";
-import {PhotoCarousel} from "./PhotoCarousel";
-import {TaxonAutocomplete} from "./TaxonAutocomplete";
-import {TaxonLineage} from "./TaxonLineage";
+import type { GuessResult, GuessRoundOutcome, Observation, PartialGuessRecord, TaxonSuggestion } from "../types";
+import { PhotoCarousel } from "./PhotoCarousel";
+import { TaxonAutocomplete } from "./TaxonAutocomplete";
+import { TaxonLineage } from "./TaxonLineage";
+
+type Phase = "guessing" | "done";
 
 interface Props {
     observation: Observation;
-    onOutcome: (outcome: "correct" | "incorrect" | "skipped") => void;
+    onOutcome: (outcome: GuessRoundOutcome) => void;
     onNext: () => void;
 }
 
 const MAX_GUESSES = 5;
+const GUESS_SLOT_KEYS = Array.from({ length: MAX_GUESSES }, (_, i) => `guess-slot-${i}`);
 
-export function QuizCard({observation, onOutcome, onNext}: Props) {
+export function QuizCard({ observation, onOutcome, onNext }: Props) {
     const [guesses, setGuesses] = useState<GuessResult[]>([]);
     const [partialGuesses, setPartialGuesses] = useState<PartialGuessRecord[]>([]);
     const [revealed, setRevealed] = useState(false);
-    const [phase, setPhase] = useState<"guessing" | "done">("guessing");
-    const [resultType, setResultType] = useState<"correct" | "incorrect" | "skipped" | null>(null);
+    const [phase, setPhase] = useState<Phase>("guessing");
+    const [resultType, setResultType] = useState<GuessRoundOutcome | null>(null);
 
     // Skip observations with no taxon
     useEffect(() => {
@@ -61,7 +64,7 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
 
         if (isPartial) {
             const newGuesses: GuessResult[] = [...guesses, "partial"];
-            const newPartials: PartialGuessRecord[] = [...partialGuesses, {taxon: suggestion!, ancestorIndex}];
+            const newPartials: PartialGuessRecord[] = [...partialGuesses, { taxon: suggestion!, ancestorIndex }];
             setGuesses(newGuesses);
             setPartialGuesses(newPartials);
             if (newGuesses.length >= MAX_GUESSES) {
@@ -146,23 +149,22 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
                                     </h3>
                                 )}
                                 <span
-                                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                                        resultType === "correct"
-                                            ? "bg-green-900/70 text-green-400"
-                                            : showPartialBadge
-                                              ? "bg-blue-900/70 text-blue-400"
-                                              : resultType === "incorrect"
+                                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${resultType === "correct"
+                                        ? "bg-green-900/70 text-green-400"
+                                        : showPartialBadge
+                                            ? "bg-blue-900/70 text-blue-400"
+                                            : resultType === "incorrect"
                                                 ? "bg-red-900/70 text-red-400"
                                                 : "bg-yellow-900/70 text-yellow-400"
-                                    }`}
+                                        }`}
                                 >
                                     {resultType === "correct"
                                         ? "Correct"
                                         : showPartialBadge
-                                          ? "Partial"
-                                          : resultType === "incorrect"
-                                            ? "Incorrect"
-                                            : "Skipped"}
+                                            ? "Partial"
+                                            : resultType === "incorrect"
+                                                ? "Incorrect"
+                                                : "Skipped"}
                                 </span>
                             </div>
                             <p className="text-neutral-300 italic text-sm">{taxon.name}</p>
@@ -186,7 +188,7 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
                 {/* Guess dots */}
                 <div className="flex gap-3 items-center justify-center">
                     <span className="text-neutral-400 text-sm">Guesses:</span>
-                    {Array.from({length: MAX_GUESSES}).map((_, i) => {
+                    {GUESS_SLOT_KEYS.map((slotKey, i) => {
                         const guess = guesses[i];
                         let color = "bg-neutral-600";
                         if (guess === "correct") {
@@ -196,7 +198,7 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
                         } else if (guess === "partial") {
                             color = "bg-blue-500";
                         }
-                        return <div key={i} className={`w-4 h-4 rounded-full ${color}`} />;
+                        return <div key={slotKey} className={`w-4 h-4 rounded-full ${color}`} />;
                     })}
                 </div>
 

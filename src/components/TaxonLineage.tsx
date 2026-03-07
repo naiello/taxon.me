@@ -1,4 +1,4 @@
-import type { TaxonAncestor } from "../types";
+import type {TaxonAncestor} from "../types";
 
 const KEY_RANKS = new Set(["kingdom", "phylum", "class", "order", "family", "genus"]);
 
@@ -11,7 +11,7 @@ interface Props {
     className?: string;
 }
 
-export function TaxonLineage({ ancestors, upToId, highlightId, className = "" }: Props) {
+export function TaxonLineage({ancestors, upToId, highlightId, className = ""}: Props) {
     let chain = ancestors;
 
     if (upToId != null) {

@@ -70,14 +70,14 @@ export function useObservations(searchParams: SearchParams | null): UseObservati
     // Initial load
     if (searchParams && !initialized && !loading) {
         setInitialized(true);
-        load(1, false);
+        void load(1, false);
     }
 
     const hasMore = observations.length < totalResults;
 
     const loadMore = useCallback(() => {
         if (hasMore && !loading) {
-            load(page + 1, true);
+            void load(page + 1, true);
         }
     }, [hasMore, loading, load, page]);
 

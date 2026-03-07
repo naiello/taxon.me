@@ -95,9 +95,9 @@ export function PhotoCarousel({photos}: Props) {
             {/* Dot indicators */}
             {photos.length > 1 && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {photos.map((_, i) => (
+                    {photos.map((photo, i) => (
                         <button
-                            key={i}
+                            key={photo.id}
                             onClick={() => goTo(i)}
                             className={`w-2 h-2 rounded-full transition-colors cursor-pointer ${
                                 i === current ? "bg-white" : "bg-white/40"
