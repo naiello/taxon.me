@@ -131,7 +131,7 @@ export function LocationPicker({onSelect}: Props) {
                         mode === "gps" ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white"
                     }`}
                 >
-                    Use GPS
+                    Nearby
                 </button>
             </div>
 
