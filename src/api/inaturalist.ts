@@ -108,7 +108,7 @@ export async function fetchObservations(params: FetchObservationsParams): Promis
         per_page: String(params.per_page ?? 100),
         page: String(params.page ?? 1),
         order: "desc",
-        order_by: "observed_on",
+        order_by: "created_at",
     });
 
     if (params.place_id) {
