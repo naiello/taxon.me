@@ -1,8 +1,10 @@
 import type {Observation, Photo, Place, TaxonAncestor, TaxonSuggestion} from "../types";
 
 const BASE_URL = "https://api.inaturalist.org/v1";
-const ALIVE_OR_DEAD_TERM_ID = "17";
-const DEAD_TERM_VALUE_ID = "19";
+const ALIVE_OR_DEAD_TERM_ID = 17;
+const DEAD_TERM_VALUE_ID = 19;
+const EVIDENCE_OF_PRESENCE_TERM_ID = 22;
+const ORGANISM_TERM_VALUE_ID = 24;
 
 interface ApiResponse {
     results: Record<string, unknown>[];
@@ -111,8 +113,8 @@ export async function fetchObservations(params: FetchObservationsParams): Promis
         page: String(params.page ?? 1),
         order: "desc",
         order_by: "created_at",
-        term_id: ALIVE_OR_DEAD_TERM_ID,
-        without_term_value_id: DEAD_TERM_VALUE_ID,
+        term_id: String(ALIVE_OR_DEAD_TERM_ID),
+        without_term_value_id: String(DEAD_TERM_VALUE_ID),
     });
 
     if (params.place_id) {
@@ -133,7 +135,17 @@ export async function fetchObservations(params: FetchObservationsParams): Promis
     }
     const data = (await res.json()) as ApiResponse;
 
-    const observations: Observation[] = data.results.map(mapObservation);
+    const liveResults = data.results.filter((raw) => {
+        const annotations = raw.annotations as
+            | {controlled_attribute?: {id?: number}; controlled_value?: {id?: number}}[]
+            | undefined;
+        const evidenceAnnotation = annotations?.find(
+            (a) => a.controlled_attribute?.id === EVIDENCE_OF_PRESENCE_TERM_ID,
+        );
+        return evidenceAnnotation == null || evidenceAnnotation.controlled_value?.id === ORGANISM_TERM_VALUE_ID;
+    });
+
+    const observations: Observation[] = liveResults.map(mapObservation);
 
     // Collect all unique ancestor IDs across all observations
     const allAncestorIds = new Set<number>();
