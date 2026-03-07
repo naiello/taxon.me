@@ -1,5 +1,7 @@
 # taxon.me
 
+Play in your browser: https://taxon.me
+
 Interactive flashcard game for testing your knowledge of your local ecosystem, or browsing observations,
 using data from [iNaturalist](https://inaturalist.org).
 
