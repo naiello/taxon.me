@@ -1,6 +1,8 @@
 import type {Observation, Photo, Place, TaxonAncestor, TaxonSuggestion} from "../types";
 
 const BASE_URL = "https://api.inaturalist.org/v1";
+const ALIVE_OR_DEAD_TERM_ID = "17";
+const DEAD_TERM_VALUE_ID = "19";
 
 interface ApiResponse {
     results: Record<string, unknown>[];
@@ -109,6 +111,8 @@ export async function fetchObservations(params: FetchObservationsParams): Promis
         page: String(params.page ?? 1),
         order: "desc",
         order_by: "created_at",
+        term_id: ALIVE_OR_DEAD_TERM_ID,
+        without_term_value_id: DEAD_TERM_VALUE_ID,
     });
 
     if (params.place_id) {
