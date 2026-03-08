@@ -39,21 +39,27 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
 
     const taxon = observation.taxon;
 
+    const resolveTaxon = (suggestion: TaxonSuggestion | null, rawText: string): TaxonSuggestion | null => {
+        if (suggestion !== null) return suggestion;
+        const guess = rawText.toLowerCase().trim();
+        const allTaxa: TaxonSuggestion[] = [
+            taxon,
+            ...(taxon.ancestors ?? []),
+        ];
+        return allTaxa.find(
+            (t) =>
+                t.name.toLowerCase() === guess ||
+                (t.preferred_common_name && t.preferred_common_name.toLowerCase() === guess),
+        ) ?? null;
+    };
+
     const checkGuess = (suggestion: TaxonSuggestion | null, rawText: string) => {
-        const label = suggestion
-            ? (suggestion.preferred_common_name || suggestion.name)
+        const resolved = resolveTaxon(suggestion, rawText);
+        const label = resolved
+            ? (resolved.preferred_common_name || resolved.name)
             : rawText.trim();
 
-        let isCorrect = false;
-
-        if (suggestion !== null) {
-            isCorrect = suggestion.id === taxon.id;
-        } else {
-            const guess = rawText.toLowerCase().trim();
-            isCorrect =
-                guess === taxon.name.toLowerCase() ||
-                (!!taxon.preferred_common_name && guess === taxon.preferred_common_name.toLowerCase());
-        }
+        const isCorrect = resolved?.id === taxon.id;
 
         if (isCorrect) {
             setGuesses((prev) => [...prev, "correct"]);
@@ -66,12 +72,12 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
         }
 
         const ancestorIds = taxon.ancestor_ids ?? [];
-        const ancestorIndex = suggestion !== null ? ancestorIds.indexOf(suggestion.id) : -1;
+        const ancestorIndex = resolved !== null ? ancestorIds.indexOf(resolved.id) : -1;
         const isPartial = ancestorIndex !== -1;
 
         if (isPartial) {
             const newGuesses: GuessResult[] = [...guesses, "partial"];
-            const newPartials: PartialGuessRecord[] = [...partialGuesses, {taxon: suggestion!, ancestorIndex}];
+            const newPartials: PartialGuessRecord[] = [...partialGuesses, {taxon: resolved!, ancestorIndex}];
             setGuesses(newGuesses);
             setGuessLabels((prev) => [...prev, label]);
             setPartialGuesses(newPartials);
