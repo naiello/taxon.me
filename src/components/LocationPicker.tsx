@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from "react";
 
 import {searchPlaces} from "../api/inaturalist";
-import type {Place, SearchParams, ViewMode} from "../types";
+import type {AppMode, Place, SearchParams} from "../types";
 import {LocationMap} from "./LocationMap";
 
 const TAXON_OPTIONS = [
@@ -19,7 +19,7 @@ const TAXON_OPTIONS = [
 ];
 
 interface Props {
-    onSelect: (params: SearchParams, mode: ViewMode) => void;
+    onSelect: (params: SearchParams, mode: AppMode) => void;
 }
 
 export function LocationPicker({onSelect}: Props) {
@@ -33,7 +33,7 @@ export function LocationPicker({onSelect}: Props) {
     const [coords, setCoords] = useState<{lat: number; lng: number} | null>(null);
     const [gpsError, setGpsError] = useState<string | null>(null);
     const [taxonId, setTaxonId] = useState<number | undefined>(undefined);
-    const [appMode, setAppMode] = useState<ViewMode>("quiz");
+    const [appMode, setAppMode] = useState<AppMode>("quiz");
     const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
     useEffect(() => {

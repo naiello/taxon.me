@@ -2,11 +2,11 @@ import {useState} from "react";
 
 import {LocationPicker} from "./components/LocationPicker";
 import {ObservationFeed} from "./components/ObservationFeed";
-import type {SearchParams, ViewMode} from "./types";
+import type {AppMode, SearchParams} from "./types";
 
 function App() {
     const [searchParams, setSearchParams] = useState<SearchParams | null>(null);
-    const [initialMode, setInitialMode] = useState<ViewMode>("quiz");
+    const [initialMode, setInitialMode] = useState<AppMode>("quiz");
 
     if (searchParams) {
         return (
