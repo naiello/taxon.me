@@ -4,7 +4,7 @@ import type {Observation, Photo, Place, TaxonAncestor, TaxonSuggestion} from "..
 
 const BASE_URL = "https://api.inaturalist.org/v1";
 const ALIVE_OR_DEAD_TERM_ID = 17;
-const DEAD_TERM_VALUE_ID = 19;
+const ALIVE_TERM_VALUE_ID = 18;
 const EVIDENCE_OF_PRESENCE_TERM_ID = 22;
 const ORGANISM_TERM_VALUE_ID = 24;
 
@@ -32,8 +32,8 @@ interface ApiTaxonResult {
 }
 
 interface ApiAnnotation {
-    controlled_attribute?: {id?: number};
-    controlled_value?: {id?: number};
+    controlled_attribute_id?: number;
+    controlled_value_id?: number;
 }
 
 interface ApiPhotoResult {
@@ -181,16 +181,11 @@ export async function fetchObservations(params: FetchObservationsParams): Promis
     }
     const data = (await res.json()) as ApiResponse<ApiObservationResult>;
 
-    const liveResults = data.results.filter((raw) => {
-        const aliveDead = raw.annotations?.find((a) => a.controlled_attribute?.id === ALIVE_OR_DEAD_TERM_ID);
-        if (aliveDead != null && aliveDead.controlled_value?.id === DEAD_TERM_VALUE_ID) {
-            return false;
-        }
-        const evidenceAnnotation = raw.annotations?.find(
-            (a) => a.controlled_attribute?.id === EVIDENCE_OF_PRESENCE_TERM_ID,
-        );
-        return evidenceAnnotation == null || evidenceAnnotation.controlled_value?.id === ORGANISM_TERM_VALUE_ID;
-    });
+    const liveResults = data.results.filter(
+        (raw) =>
+            hasAnnotationMatching(raw, ALIVE_OR_DEAD_TERM_ID, isNullOrEqual(ALIVE_TERM_VALUE_ID)) &&
+            hasAnnotationMatching(raw, EVIDENCE_OF_PRESENCE_TERM_ID, isNullOrEqual(ORGANISM_TERM_VALUE_ID)),
+    );
 
     const observations: Observation[] = liveResults.map(mapObservation);
 
@@ -250,4 +245,17 @@ function mapObservation(raw: ApiObservationResult): Observation {
         location: raw.location,
         observed_on_string: raw.observed_on_string,
     };
+}
+
+function hasAnnotationMatching(
+    observation: ApiObservationResult,
+    attr_id: number,
+    predicate: (_: number | undefined | null) => boolean,
+): boolean {
+    const a = observation.annotations?.find((a) => a.controlled_attribute_id === attr_id);
+    return predicate(a?.controlled_value_id);
+}
+
+function isNullOrEqual(n: number): (_: number | null | undefined) => boolean {
+    return (v) => v == null || v == undefined || v == n;
 }

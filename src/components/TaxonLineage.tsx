@@ -35,9 +35,13 @@ export function TaxonLineage({ancestors, upToId, highlightId, partialId, classNa
             {filtered.map((a, i) => {
                 let colorClass = "";
                 if (partialId != null && partialFilteredIdx !== -1) {
-                    if (i === partialFilteredIdx) colorClass = "text-blue-400";
-                    else if (i > partialFilteredIdx) colorClass = "text-red-400";
-                    else colorClass = "text-neutral-500";
+                    if (i === partialFilteredIdx) {
+                        colorClass = "text-blue-400";
+                    } else if (i > partialFilteredIdx) {
+                        colorClass = "text-red-400";
+                    } else {
+                        colorClass = "text-neutral-500";
+                    }
                 } else if (highlightId != null) {
                     colorClass = a.id === highlightId ? "text-blue-400" : "text-neutral-500";
                 }
