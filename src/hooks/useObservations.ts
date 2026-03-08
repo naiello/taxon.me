@@ -43,16 +43,26 @@ export function useObservations(searchParams: SearchParams | null): UseObservati
             setLoading(true);
             setError(null);
             try {
+                const userIdParam = searchParams.user_ids?.length ? searchParams.user_ids.join(",") : undefined;
+
                 const apiParams =
                     searchParams.type === "place"
-                        ? {place_id: searchParams.place_id, taxon_id: searchParams.taxon_id, page: pageNum}
-                        : {
-                              lat: searchParams.lat,
-                              lng: searchParams.lng,
-                              radius: searchParams.radius,
+                        ? {
+                              place_id: searchParams.place_id,
                               taxon_id: searchParams.taxon_id,
+                              user_id: userIdParam,
                               page: pageNum,
-                          };
+                          }
+                        : searchParams.type === "gps"
+                          ? {
+                                lat: searchParams.lat,
+                                lng: searchParams.lng,
+                                radius: searchParams.radius,
+                                taxon_id: searchParams.taxon_id,
+                                user_id: userIdParam,
+                                page: pageNum,
+                            }
+                          : {taxon_id: searchParams.taxon_id, user_id: userIdParam, page: pageNum};
 
                 const result = await fetchObservations(apiParams);
                 setObservations((prev) =>

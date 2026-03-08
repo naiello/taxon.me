@@ -65,6 +65,15 @@ export interface PartialGuessRecord {
     ancestorIndex: number;
 }
 
+export interface INaturalistUser {
+    id: number;
+    login: string;
+    name?: string;
+    icon_url?: string;
+    observations_count?: number;
+}
+
 export type SearchParams =
-    | {type: "place"; place_id: number; place_name: string; taxon_id?: number}
-    | {type: "gps"; lat: number; lng: number; radius: number; taxon_id?: number};
+    | {type: "place"; place_id: number; place_name: string; taxon_id?: number; user_ids?: number[]}
+    | {type: "gps"; lat: number; lng: number; radius: number; taxon_id?: number; user_ids?: number[]}
+    | {type: "worldwide"; taxon_id?: number; user_ids?: number[]};

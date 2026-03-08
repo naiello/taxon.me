@@ -1,6 +1,6 @@
 import type {GeoJsonObject} from "geojson";
 
-import type {Observation, Photo, Place, TaxonAncestor, TaxonSuggestion} from "../types";
+import type {INaturalistUser, Observation, Photo, Place, TaxonAncestor, TaxonSuggestion} from "../types";
 
 const BASE_URL = "https://api.inaturalist.org/v1";
 const ALIVE_OR_DEAD_TERM_ID = 17;
@@ -107,12 +107,39 @@ export async function searchTaxa(query: string, taxonId?: number): Promise<Taxon
     }));
 }
 
+interface ApiUserResult {
+    id: number;
+    login: string;
+    name?: string;
+    icon_url?: string;
+    observations_count?: number;
+}
+
+export async function searchUsers(query: string): Promise<INaturalistUser[]> {
+    if (!query.trim()) {
+        return [];
+    }
+    const res = await fetch(`${BASE_URL}/users/autocomplete?q=${encodeURIComponent(query)}&per_page=10`);
+    if (!res.ok) {
+        throw new Error(`Users search failed: ${res.status}`);
+    }
+    const data = (await res.json()) as ApiResponse<ApiUserResult>;
+    return data.results.map((u) => ({
+        id: u.id,
+        login: u.login,
+        name: u.name ?? undefined,
+        icon_url: u.icon_url ?? undefined,
+        observations_count: u.observations_count,
+    }));
+}
+
 interface FetchObservationsParams {
     place_id?: number;
     lat?: number;
     lng?: number;
     radius?: number;
     taxon_id?: number;
+    user_id?: string;
     page?: number;
     per_page?: number;
 }
@@ -173,6 +200,10 @@ export async function fetchObservations(params: FetchObservationsParams): Promis
 
     if (params.taxon_id) {
         searchParams.set("taxon_id", String(params.taxon_id));
+    }
+
+    if (params.user_id) {
+        searchParams.set("user_id", params.user_id);
     }
 
     const res = await fetch(`${BASE_URL}/observations?${searchParams}`);

@@ -1,9 +1,10 @@
 import {useEffect, useRef, useState} from "react";
 
 import {searchPlaces} from "../api/inaturalist";
-import type {AppMode, Place, SearchParams} from "../types";
+import type {AppMode, INaturalistUser, Place, SearchParams} from "../types";
 import {AboutModal} from "./AboutModal";
 import {LocationMap} from "./LocationMap";
+import {UserAutocomplete} from "./UserAutocomplete";
 
 const TAXON_OPTIONS = [
     {label: "All", taxon_id: undefined},
@@ -24,7 +25,7 @@ interface Props {
 }
 
 export function LocationPicker({onSelect}: Props) {
-    const [mode, setMode] = useState<"search" | "gps">("search");
+    const [mode, setMode] = useState<"search" | "gps" | "worldwide">("search");
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<Place[]>([]);
     const [searching, setSearching] = useState(false);
@@ -34,6 +35,7 @@ export function LocationPicker({onSelect}: Props) {
     const [coords, setCoords] = useState<{lat: number; lng: number} | null>(null);
     const [gpsError, setGpsError] = useState<string | null>(null);
     const [taxonId, setTaxonId] = useState<number | undefined>(undefined);
+    const [selectedUsers, setSelectedUsers] = useState<INaturalistUser[]>([]);
     const [appMode, setAppMode] = useState<AppMode>("quiz");
     const [showAbout, setShowAbout] = useState(false);
     const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -86,13 +88,16 @@ export function LocationPicker({onSelect}: Props) {
         );
     };
 
-    const canSubmit = mode === "search" ? selectedPlace !== null : coords !== null;
+    const canSubmit = mode === "worldwide" ? true : mode === "search" ? selectedPlace !== null : coords !== null;
 
     const handleSubmit = () => {
         if (!canSubmit) {
             return;
         }
-        if (mode === "search" && selectedPlace) {
+        const userIds = selectedUsers.length > 0 ? selectedUsers.map((u) => u.id) : undefined;
+        if (mode === "worldwide") {
+            onSelect({type: "worldwide", taxon_id: taxonId, user_ids: userIds}, appMode);
+        } else if (mode === "search" && selectedPlace) {
             if (selectedPlace.has_geometry) {
                 onSelect(
                     {
@@ -100,16 +105,19 @@ export function LocationPicker({onSelect}: Props) {
                         place_id: selectedPlace.id,
                         place_name: selectedPlace.display_name,
                         taxon_id: taxonId,
+                        user_ids: userIds,
                     },
                     appMode,
                 );
             } else {
-                // Place has no geometry on iNaturalist — fall back to coordinate search
                 const [lat, lng] = selectedPlace.location.split(",").map(Number);
-                onSelect({type: "gps", lat, lng, radius: 25, taxon_id: taxonId}, appMode);
+                onSelect({type: "gps", lat, lng, radius: 25, taxon_id: taxonId, user_ids: userIds}, appMode);
             }
         } else if (mode === "gps" && coords) {
-            onSelect({type: "gps", lat: coords.lat, lng: coords.lng, radius, taxon_id: taxonId}, appMode);
+            onSelect(
+                {type: "gps", lat: coords.lat, lng: coords.lng, radius, taxon_id: taxonId, user_ids: userIds},
+                appMode,
+            );
         }
     };
 
@@ -136,10 +144,20 @@ export function LocationPicker({onSelect}: Props) {
                 >
                     Nearby
                 </button>
+                <button
+                    onClick={() => setMode("worldwide")}
+                    className={`px-4 py-2.5 rounded-md text-base font-medium transition-colors cursor-pointer ${
+                        mode === "worldwide" ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white"
+                    }`}
+                >
+                    Worldwide
+                </button>
             </div>
 
             <div className="w-full max-w-md">
-                {mode === "search" ? (
+                {mode === "worldwide" ? (
+                    <p className="text-neutral-400 text-center">Observations from anywhere</p>
+                ) : mode === "search" ? (
                     <div className="relative">
                         <input
                             type="text"
@@ -289,6 +307,12 @@ export function LocationPicker({onSelect}: Props) {
                         </button>
                     ))}
                 </div>
+            </div>
+
+            {/* User filter */}
+            <div className="w-full max-w-md mt-4">
+                <p className="text-sm text-neutral-400 mb-2">Filter by observer</p>
+                <UserAutocomplete selectedUsers={selectedUsers} onChange={setSelectedUsers} />
             </div>
 
             {/* Submit */}
