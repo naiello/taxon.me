@@ -114,7 +114,7 @@ export function LocationPicker({onSelect}: Props) {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-full px-5">
+        <div className="flex flex-col items-center w-full h-full overflow-y-auto px-5 py-8">
             <h1 className="text-3xl font-bold mb-2">taxon.me</h1>
             <p className="text-neutral-400 mb-8 text-center">Test your knowledge of your local ecosystem</p>
 
@@ -226,7 +226,7 @@ export function LocationPicker({onSelect}: Props) {
             </div>
 
             {/* Map preview */}
-            {mode === "search" && selectedPlace && (
+            {!showAbout && mode === "search" && selectedPlace && (
                 <div className="w-full max-w-md mt-4">
                     <LocationMap
                         geojson={selectedPlace.geometry_geojson}
@@ -242,7 +242,7 @@ export function LocationPicker({onSelect}: Props) {
                     />
                 </div>
             )}
-            {mode === "gps" && coords && (
+            {!showAbout && mode === "gps" && coords && (
                 <div className="w-full max-w-md mt-4">
                     <LocationMap center={coords} radiusKm={radius} />
                 </div>
@@ -303,13 +303,15 @@ export function LocationPicker({onSelect}: Props) {
             </div>
 
             {/* About button */}
-            <button
-                onClick={() => setShowAbout(true)}
-                className="fixed bottom-4 right-4 w-6 h-6 rounded-full border border-neutral-600 hover:border-neutral-400 text-neutral-500 hover:text-neutral-300 transition-colors cursor-pointer flex items-center justify-center text-xs font-semibold"
-                aria-label="About"
-            >
-                ?
-            </button>
+            <div className="w-full max-w-md mt-2 flex justify-end">
+                <button
+                    onClick={() => setShowAbout(true)}
+                    className="w-6 h-6 rounded-full border border-neutral-600 hover:border-neutral-400 text-neutral-500 hover:text-neutral-300 transition-colors cursor-pointer flex items-center justify-center text-xs font-semibold"
+                    aria-label="About"
+                >
+                    ?
+                </button>
+            </div>
 
             {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
         </div>

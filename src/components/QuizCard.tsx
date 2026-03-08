@@ -40,24 +40,23 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
     const taxon = observation.taxon;
 
     const resolveTaxon = (suggestion: TaxonSuggestion | null, rawText: string): TaxonSuggestion | null => {
-        if (suggestion !== null) return suggestion;
+        if (suggestion !== null) {
+            return suggestion;
+        }
         const guess = rawText.toLowerCase().trim();
-        const allTaxa: TaxonSuggestion[] = [
-            taxon,
-            ...(taxon.ancestors ?? []),
-        ];
-        return allTaxa.find(
-            (t) =>
-                t.name.toLowerCase() === guess ||
-                (t.preferred_common_name && t.preferred_common_name.toLowerCase() === guess),
-        ) ?? null;
+        const allTaxa: TaxonSuggestion[] = [taxon, ...(taxon.ancestors ?? [])];
+        return (
+            allTaxa.find(
+                (t) =>
+                    t.name.toLowerCase() === guess ||
+                    (t.preferred_common_name && t.preferred_common_name.toLowerCase() === guess),
+            ) ?? null
+        );
     };
 
     const checkGuess = (suggestion: TaxonSuggestion | null, rawText: string) => {
         const resolved = resolveTaxon(suggestion, rawText);
-        const label = resolved
-            ? (resolved.preferred_common_name || resolved.name)
-            : rawText.trim();
+        const label = resolved ? resolved.preferred_common_name || resolved.name : rawText.trim();
 
         const isCorrect = resolved?.id === taxon.id;
 
@@ -255,19 +254,22 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
                     {/* Guess list — always visible on desktop, collapsible on mobile */}
                     {guesses.length > 0 && (
                         <div className={`mt-2 flex justify-center ${historyExpanded ? "" : "hidden"} lg:flex`}>
-                        <div className="flex flex-col gap-1">
-                            {guesses.map((guess, i) => {
-                                let dotColor = "bg-red-500";
-                                if (guess === "correct") dotColor = "bg-green-500";
-                                else if (guess === "partial") dotColor = "bg-blue-500";
-                                return (
-                                    <div key={GUESS_SLOT_KEYS[i]} className="flex items-center gap-2 text-sm">
-                                        <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} />
-                                        <span className="text-neutral-300 truncate">{guessLabels[i]}</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                            <div className="flex flex-col gap-1">
+                                {guesses.map((guess, i) => {
+                                    let dotColor = "bg-red-500";
+                                    if (guess === "correct") {
+                                        dotColor = "bg-green-500";
+                                    } else if (guess === "partial") {
+                                        dotColor = "bg-blue-500";
+                                    }
+                                    return (
+                                        <div key={GUESS_SLOT_KEYS[i]} className="flex items-center gap-2 text-sm">
+                                            <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} />
+                                            <span className="text-neutral-300 truncate">{guessLabels[i]}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     )}
                 </div>

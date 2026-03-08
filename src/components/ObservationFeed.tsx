@@ -133,10 +133,32 @@ export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Pr
                 >
                     ←
                 </button>
-                <span className="text-base text-neutral-300 truncate flex-1">{locationLabel}</span>
+                <div className="flex flex-col flex-1 min-w-0">
+                    <span className="text-base text-neutral-300 truncate">{locationLabel}</span>
+                    {quizMode && (
+                        <span className="flex items-center gap-3 text-sm whitespace-nowrap sm:hidden">
+                            <span className="flex items-center gap-1" title="Correct">
+                                <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />
+                                <span className="text-neutral-300">{score.correct}</span>
+                            </span>
+                            <span className="flex items-center gap-1" title="Incorrect">
+                                <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />
+                                <span className="text-neutral-300">{score.incorrect}</span>
+                            </span>
+                            <span className="flex items-center gap-1" title="Partial">
+                                <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />
+                                <span className="text-neutral-300">{score.partial}</span>
+                            </span>
+                            <span className="flex items-center gap-1" title="Skipped">
+                                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 inline-block" />
+                                <span className="text-neutral-300">{score.skipped}</span>
+                            </span>
+                        </span>
+                    )}
+                </div>
 
                 {quizMode && (
-                    <span className="flex items-center gap-3 text-sm whitespace-nowrap">
+                    <span className="hidden sm:flex items-center gap-3 text-sm whitespace-nowrap">
                         <span className="flex items-center gap-1" title="Correct">
                             <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />
                             <span className="text-neutral-300">{score.correct}</span>
@@ -225,17 +247,22 @@ export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Pr
                 {observations.map((obs) => (
                     <div
                         key={obs.id}
-                        className="relative w-full"
+                        className="flex flex-col relative w-full overflow-hidden lg:block"
                         style={{
-                            height: "calc(100vh - 44px)",
+                            height: "calc(100dvh - 44px)",
                             scrollSnapAlign: "start",
                         }}
                     >
                         {/* Photo carousel */}
-                        <PhotoCarousel photos={obs.photos} />
+                        <div className="flex-1 min-h-0 relative lg:absolute lg:inset-0">
+                            <PhotoCarousel photos={obs.photos} />
+                        </div>
 
-                        {/* Info overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 pb-8 pt-16 pointer-events-none">
+                        {/* Info panel — below photo on mobile, overlay on desktop */}
+                        <div
+                            className="shrink-0 overflow-y-auto bg-neutral-900 px-4 py-3 pb-6 lg:pb-8 lg:overflow-y-visible lg:absolute lg:bottom-0 lg:left-0 lg:right-0 lg:bg-transparent lg:bg-gradient-to-t lg:from-black/80 lg:via-black/40 lg:to-transparent lg:pt-16"
+                            style={{maxHeight: "40dvh"}}
+                        >
                             {obs.taxon && (
                                 <>
                                     {obs.taxon.preferred_common_name && (
@@ -244,7 +271,7 @@ export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Pr
                                                 href={`https://www.inaturalist.org/observations/${obs.id}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="pointer-events-auto hover:text-neutral-200 transition-colors"
+                                                className="hover:text-neutral-200 transition-colors"
                                             >
                                                 {obs.taxon.preferred_common_name}
                                             </a>
@@ -266,15 +293,12 @@ export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Pr
                                         href={`https://www.inaturalist.org/people/${obs.user.login}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="pointer-events-auto hover:text-neutral-300 transition-colors"
+                                        className="hover:text-neutral-300 transition-colors"
                                     >
                                         @{obs.user.login}
                                     </a>
                                     {obs.observed_on_string && <span>{obs.observed_on_string}</span>}
                                 </p>
-                            )}
-                            {obs.photos.length > 1 && (
-                                <p className="text-neutral-500 text-xs mt-1">{obs.photos.length} photos</p>
                             )}
                         </div>
                     </div>

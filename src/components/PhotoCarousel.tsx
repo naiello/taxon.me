@@ -5,9 +5,10 @@ import type {Photo} from "../types";
 
 interface Props {
     photos: Photo[];
+    dotsClassName?: string;
 }
 
-export function PhotoCarousel({photos}: Props) {
+export function PhotoCarousel({photos, dotsClassName = "bottom-4"}: Props) {
     const [current, setCurrent] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
     const touchStartX = useRef(0);
@@ -94,7 +95,7 @@ export function PhotoCarousel({photos}: Props) {
 
             {/* Dot indicators */}
             {photos.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+                <div className={`absolute ${dotsClassName} left-1/2 -translate-x-1/2 flex gap-1.5`}>
                     {photos.map((photo, i) => (
                         <button
                             key={photo.id}
