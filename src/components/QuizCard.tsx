@@ -18,10 +18,12 @@ const GUESS_SLOT_KEYS = Array.from({length: MAX_GUESSES}, (_, i) => `guess-slot-
 
 export function QuizCard({observation, onOutcome, onNext}: Props) {
     const [guesses, setGuesses] = useState<GuessResult[]>([]);
+    const [guessLabels, setGuessLabels] = useState<string[]>([]);
     const [partialGuesses, setPartialGuesses] = useState<PartialGuessRecord[]>([]);
     const [revealed, setRevealed] = useState(false);
     const [phase, setPhase] = useState<Phase>("guessing");
     const [resultType, setResultType] = useState<GuessRoundOutcome | null>(null);
+    const [historyExpanded, setHistoryExpanded] = useState(false);
 
     // Skip observations with no taxon
     useEffect(() => {
@@ -38,6 +40,10 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
     const taxon = observation.taxon;
 
     const checkGuess = (suggestion: TaxonSuggestion | null, rawText: string) => {
+        const label = suggestion
+            ? (suggestion.preferred_common_name || suggestion.name)
+            : rawText.trim();
+
         let isCorrect = false;
 
         if (suggestion !== null) {
@@ -51,6 +57,7 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
 
         if (isCorrect) {
             setGuesses((prev) => [...prev, "correct"]);
+            setGuessLabels((prev) => [...prev, label]);
             setPhase("done");
             setRevealed(true);
             setResultType("correct");
@@ -66,6 +73,7 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
             const newGuesses: GuessResult[] = [...guesses, "partial"];
             const newPartials: PartialGuessRecord[] = [...partialGuesses, {taxon: suggestion!, ancestorIndex}];
             setGuesses(newGuesses);
+            setGuessLabels((prev) => [...prev, label]);
             setPartialGuesses(newPartials);
             if (newGuesses.length >= MAX_GUESSES) {
                 setPhase("done");
@@ -76,6 +84,7 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
         } else {
             const newGuesses: GuessResult[] = [...guesses, "wrong"];
             setGuesses(newGuesses);
+            setGuessLabels((prev) => [...prev, label]);
             if (newGuesses.length >= MAX_GUESSES) {
                 const outcome = partialGuesses.length > 0 ? "partial" : "incorrect";
                 setPhase("done");
@@ -196,21 +205,65 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
                     </>
                 )}
 
-                {/* Guess dots */}
-                <div className="flex gap-3 items-center justify-center">
-                    <span className="text-neutral-400 text-sm">Guesses:</span>
-                    {GUESS_SLOT_KEYS.map((slotKey, i) => {
-                        const guess = guesses[i];
-                        let color = "bg-neutral-600";
-                        if (guess === "correct") {
-                            color = "bg-green-500";
-                        } else if (guess === "wrong") {
-                            color = "bg-red-500";
-                        } else if (guess === "partial") {
-                            color = "bg-blue-500";
-                        }
-                        return <div key={slotKey} className={`w-4 h-4 rounded-full ${color}`} />;
-                    })}
+                {/* Guess history */}
+                <div>
+                    {/* Dots row + mobile toggle */}
+                    <div className="flex gap-3 items-center justify-center">
+                        <span className="text-neutral-400 text-sm">Guesses:</span>
+                        {GUESS_SLOT_KEYS.map((slotKey, i) => {
+                            const guess = guesses[i];
+                            let color = "bg-neutral-600";
+                            if (guess === "correct") {
+                                color = "bg-green-500";
+                            } else if (guess === "wrong") {
+                                color = "bg-red-500";
+                            } else if (guess === "partial") {
+                                color = "bg-blue-500";
+                            }
+                            return <div key={slotKey} className={`w-4 h-4 rounded-full ${color}`} />;
+                        })}
+                        {guesses.length > 0 && (
+                            <button
+                                className="lg:hidden text-neutral-400 hover:text-neutral-200 transition-colors ml-1"
+                                onClick={() => setHistoryExpanded((e) => !e)}
+                                aria-label={historyExpanded ? "Hide guess history" : "Show guess history"}
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className={`transition-transform ${historyExpanded ? "rotate-180" : ""}`}
+                                >
+                                    <polyline points="6 9 12 15 18 9" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Guess list — always visible on desktop, collapsible on mobile */}
+                    {guesses.length > 0 && (
+                        <div className={`mt-2 flex justify-center ${historyExpanded ? "" : "hidden"} lg:flex`}>
+                        <div className="flex flex-col gap-1">
+                            {guesses.map((guess, i) => {
+                                let dotColor = "bg-red-500";
+                                if (guess === "correct") dotColor = "bg-green-500";
+                                else if (guess === "partial") dotColor = "bg-blue-500";
+                                return (
+                                    <div key={GUESS_SLOT_KEYS[i]} className="flex items-center gap-2 text-sm">
+                                        <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} />
+                                        <span className="text-neutral-300 truncate">{guessLabels[i]}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Observer */}
