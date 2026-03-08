@@ -2,6 +2,7 @@ import {useCallback, useEffect, useRef, useState} from "react";
 
 import {useObservations} from "../hooks/useObservations";
 import type {AppMode, GuessRoundOutcome, SearchParams} from "../types";
+import {AboutModal} from "./AboutModal";
 import {PhotoCarousel} from "./PhotoCarousel";
 import {QuizCard} from "./QuizCard";
 import {TaxonLineage} from "./TaxonLineage";
@@ -19,6 +20,7 @@ export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Pr
     const [quizMode, setQuizMode] = useState(initialMode === "quiz");
     const [quizIndex, setQuizIndex] = useState(0);
     const [score, setScore] = useState({correct: 0, incorrect: 0, skipped: 0});
+    const [showAbout, setShowAbout] = useState(false);
 
     const locationLabel =
         searchParams.type === "place"
@@ -162,7 +164,17 @@ export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Pr
                         Browse
                     </button>
                 </div>
+
+                <button
+                    onClick={() => setShowAbout(true)}
+                    className="w-6 h-6 rounded-full border border-neutral-600 hover:border-neutral-400 text-neutral-500 hover:text-neutral-300 transition-colors cursor-pointer flex items-center justify-center text-xs font-semibold shrink-0"
+                    aria-label="About"
+                >
+                    ?
+                </button>
             </div>
+
+            {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
 
             {/* Body */}
             <div className={`flex-1 overflow-hidden ${quizMode ? "" : "hidden"}`}>

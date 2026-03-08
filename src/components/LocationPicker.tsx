@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from "react";
 
 import {searchPlaces} from "../api/inaturalist";
 import type {AppMode, Place, SearchParams} from "../types";
+import {AboutModal} from "./AboutModal";
 import {LocationMap} from "./LocationMap";
 
 const TAXON_OPTIONS = [
@@ -34,6 +35,7 @@ export function LocationPicker({onSelect}: Props) {
     const [gpsError, setGpsError] = useState<string | null>(null);
     const [taxonId, setTaxonId] = useState<number | undefined>(undefined);
     const [appMode, setAppMode] = useState<AppMode>("quiz");
+    const [showAbout, setShowAbout] = useState(false);
     const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
     useEffect(() => {
@@ -299,6 +301,17 @@ export function LocationPicker({onSelect}: Props) {
                     Browse Observations
                 </button>
             </div>
+
+            {/* About button */}
+            <button
+                onClick={() => setShowAbout(true)}
+                className="fixed bottom-4 right-4 w-6 h-6 rounded-full border border-neutral-600 hover:border-neutral-400 text-neutral-500 hover:text-neutral-300 transition-colors cursor-pointer flex items-center justify-center text-xs font-semibold"
+                aria-label="About"
+            >
+                ?
+            </button>
+
+            {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
         </div>
     );
 }
