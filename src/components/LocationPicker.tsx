@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from "react";
 
 import {searchPlaces} from "../api/inaturalist";
-import type {Place, SearchParams} from "../types";
+import type {Place, SearchParams, ViewMode} from "../types";
 import {LocationMap} from "./LocationMap";
 
 const TAXON_OPTIONS = [
@@ -19,7 +19,7 @@ const TAXON_OPTIONS = [
 ];
 
 interface Props {
-    onSelect: (params: SearchParams, mode: "browse" | "quiz") => void;
+    onSelect: (params: SearchParams, mode: ViewMode) => void;
 }
 
 export function LocationPicker({onSelect}: Props) {
@@ -33,7 +33,7 @@ export function LocationPicker({onSelect}: Props) {
     const [coords, setCoords] = useState<{lat: number; lng: number} | null>(null);
     const [gpsError, setGpsError] = useState<string | null>(null);
     const [taxonId, setTaxonId] = useState<number | undefined>(undefined);
-    const [appMode, setAppMode] = useState<"browse" | "quiz">("browse");
+    const [appMode, setAppMode] = useState<ViewMode>("quiz");
     const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
     useEffect(() => {
@@ -251,20 +251,20 @@ export function LocationPicker({onSelect}: Props) {
                 <p className="text-sm text-neutral-400 mb-2">Mode</p>
                 <div className="flex gap-1 bg-neutral-800 rounded-lg p-1 w-fit">
                     <button
-                        onClick={() => setAppMode("browse")}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                            appMode === "browse" ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white"
-                        }`}
-                    >
-                        Browse
-                    </button>
-                    <button
                         onClick={() => setAppMode("quiz")}
                         className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                             appMode === "quiz" ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white"
                         }`}
                     >
                         Quiz
+                    </button>
+                    <button
+                        onClick={() => setAppMode("browse")}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                            appMode === "browse" ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white"
+                        }`}
+                    >
+                        Browse
                     </button>
                 </div>
             </div>

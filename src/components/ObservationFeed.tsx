@@ -1,18 +1,18 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 
 import {useObservations} from "../hooks/useObservations";
-import type {GuessRoundOutcome, SearchParams, ViewMode} from "../types";
+import type {AppMode, GuessRoundOutcome, SearchParams} from "../types";
 import {PhotoCarousel} from "./PhotoCarousel";
 import {QuizCard} from "./QuizCard";
 import {TaxonLineage} from "./TaxonLineage";
 
 interface Props {
     searchParams: SearchParams;
-    initialMode?: ViewMode;
+    initialMode?: AppMode;
     onBack: () => void;
 }
 
-export function ObservationFeed({searchParams, initialMode = "browse", onBack}: Props) {
+export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Props) {
     const {observations, loading, error, hasMore, loadMore} = useObservations(searchParams);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -146,20 +146,20 @@ export function ObservationFeed({searchParams, initialMode = "browse", onBack}: 
 
                 <div className="flex gap-1 bg-neutral-800 rounded-lg p-1 shrink-0">
                     <button
-                        onClick={() => quizMode && handleToggleMode()}
-                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                            !quizMode ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white"
-                        }`}
-                    >
-                        Browse
-                    </button>
-                    <button
                         onClick={() => !quizMode && handleToggleMode()}
                         className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                             quizMode ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white"
                         }`}
                     >
                         Quiz
+                    </button>
+                    <button
+                        onClick={() => quizMode && handleToggleMode()}
+                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                            !quizMode ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white"
+                        }`}
+                    >
+                        Browse
                     </button>
                 </div>
             </div>
