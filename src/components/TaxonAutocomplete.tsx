@@ -24,8 +24,7 @@ export function TaxonAutocomplete({
     const [results, setResults] = useState<TaxonSuggestion[]>([]);
     const [showDropdown, setShowDropdown] = useState(false);
     const [selected, setSelected] = useState<TaxonSuggestion | null>(null);
-    const [flashing, setFlashing] = useState(false);
-    const [flashingBlue, setFlashingBlue] = useState(false);
+    const [flashClass, setFlashClass] = useState<string | null>(null);
     const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -49,14 +48,18 @@ export function TaxonAutocomplete({
         return () => clearTimeout(debounceRef.current);
     }, [query, selected, partialTaxonId]);
 
+    const triggerFlash = (cls: string) => {
+        setFlashClass(cls);
+        const t = setTimeout(() => setFlashClass(null), 500);
+        return () => clearTimeout(t);
+    };
+
     useEffect(() => {
         if (wrongCount === 0) {
             return;
         }
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setFlashing(true);
-        const t = setTimeout(() => setFlashing(false), 500);
-        return () => clearTimeout(t);
+        return triggerFlash("flash-red");
     }, [wrongCount]);
 
     useEffect(() => {
@@ -64,9 +67,7 @@ export function TaxonAutocomplete({
             return;
         }
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setFlashingBlue(true);
-        const t = setTimeout(() => setFlashingBlue(false), 500);
-        return () => clearTimeout(t);
+        return triggerFlash("flash-blue");
     }, [partialCount]);
 
     useEffect(() => {
@@ -124,7 +125,7 @@ export function TaxonAutocomplete({
                 }}
                 placeholder="Guess the species..."
                 disabled={disabled}
-                className={`w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-500 text-base disabled:opacity-50 mb-2 ${flashing ? "flash-red" : flashingBlue ? "flash-blue" : ""}`}
+                className={`w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-500 text-base disabled:opacity-50 mb-2 ${flashClass ?? ""}`}
             />
             {/* Dropdown below input */}
             {showDropdown && (
