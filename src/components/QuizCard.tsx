@@ -168,10 +168,20 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
                                             : "Skipped"}
                                 </span>
                             </div>
-                            <p className="text-neutral-300 italic text-sm">{taxon.name}</p>
+                            <p className="text-neutral-300 italic text-sm">
+                                <a
+                                    href={`https://www.inaturalist.org/taxa/${taxon.id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="hover:text-neutral-100 transition-colors"
+                                >
+                                    {taxon.name}
+                                </a>
+                            </p>
                             {taxon.ancestors && (
                                 <TaxonLineage
                                     ancestors={taxon.ancestors}
+                                    partialId={resultType === "partial" ? mostSpecificPartial?.taxon.id : undefined}
                                     className="text-neutral-400 text-center mt-0.5"
                                 />
                             )}
