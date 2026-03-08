@@ -114,7 +114,7 @@ export function LocationPicker({onSelect}: Props) {
     };
 
     return (
-        <div className="flex flex-col items-center w-full h-full overflow-y-auto px-5 py-8">
+        <div className="flex flex-col items-center w-full h-full overflow-y-auto px-5 py-8 md:justify-center">
             <h1 className="text-3xl font-bold mb-2">taxon.me</h1>
             <p className="text-neutral-400 mb-8 text-center">Test your knowledge of your local ecosystem</p>
 
