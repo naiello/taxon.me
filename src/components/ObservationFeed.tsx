@@ -121,7 +121,7 @@ export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Pr
     const scored = score.correct + score.incorrect;
     const pct = scored > 0 ? Math.round((score.correct / scored) * 100) : 0;
     const quizObs = observations[quizIndex];
-    const quizEnded = quizIndex >= observations.length && !hasMore;
+    const quizEnded = quizIndex >= observations.length && !hasMore && !loading;
 
     return (
         <div className="h-full flex flex-col">
