@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from "react";
 
 import {searchPlaces} from "../api/inaturalist";
 import type {Place, SearchParams} from "../types";
+import {LocationMap} from "./LocationMap";
 
 const TAXON_OPTIONS = [
     {label: "All", taxon_id: undefined},
@@ -221,6 +222,29 @@ export function LocationPicker({onSelect}: Props) {
                     </div>
                 )}
             </div>
+
+            {/* Map preview */}
+            {mode === "search" && selectedPlace && (
+                <div className="w-full max-w-md mt-4">
+                    <LocationMap
+                        geojson={selectedPlace.geometry_geojson}
+                        center={
+                            !selectedPlace.geometry_geojson && selectedPlace.location
+                                ? {
+                                      lat: Number(selectedPlace.location.split(",")[0]),
+                                      lng: Number(selectedPlace.location.split(",")[1]),
+                                  }
+                                : undefined
+                        }
+                        radiusKm={!selectedPlace.geometry_geojson ? 25 : undefined}
+                    />
+                </div>
+            )}
+            {mode === "gps" && coords && (
+                <div className="w-full max-w-md mt-4">
+                    <LocationMap center={coords} radiusKm={radius} />
+                </div>
+            )}
 
             {/* App mode */}
             <div className="w-full max-w-md mt-6">

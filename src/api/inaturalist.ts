@@ -1,3 +1,5 @@
+import type {GeoJsonObject} from "geojson";
+
 import type {Observation, Photo, Place, TaxonAncestor, TaxonSuggestion} from "../types";
 
 const BASE_URL = "https://api.inaturalist.org/v1";
@@ -80,6 +82,7 @@ export async function searchPlaces(query: string): Promise<Place[]> {
         location: p.location ?? "",
         bbox_area: p.bbox_area,
         has_geometry: p.geometry_geojson != null,
+        geometry_geojson: p.geometry_geojson as GeoJsonObject | undefined,
     }));
 }
 

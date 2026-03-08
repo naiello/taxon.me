@@ -1,4 +1,9 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+.leaflet-container img {
+    max-width: none !important;
+}
 
 @keyframes flash-red {
     0%,

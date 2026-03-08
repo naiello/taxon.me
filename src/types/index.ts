@@ -1,3 +1,5 @@
+import type {GeoJsonObject} from "geojson";
+
 export interface Photo {
     id: number;
     url: string;
@@ -48,6 +50,7 @@ export interface Place {
     location: string; // "lat,lng"
     bbox_area?: number;
     has_geometry: boolean;
+    geometry_geojson?: GeoJsonObject;
 }
 
 export interface TaxonSuggestion {
