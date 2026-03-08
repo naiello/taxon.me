@@ -19,7 +19,7 @@ export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Pr
 
     const [quizMode, setQuizMode] = useState(initialMode === "quiz");
     const [quizIndex, setQuizIndex] = useState(0);
-    const [score, setScore] = useState({correct: 0, incorrect: 0, skipped: 0});
+    const [score, setScore] = useState({correct: 0, partial: 0, incorrect: 0, skipped: 0});
     const [showAbout, setShowAbout] = useState(false);
 
     const locationLabel =
@@ -120,8 +120,6 @@ export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Pr
         });
     }, [observations.length, hasMore, loadMore]);
 
-    const scored = score.correct + score.incorrect;
-    const pct = scored > 0 ? Math.round((score.correct / scored) * 100) : 0;
     const quizObs = observations[quizIndex];
     const quizEnded = quizIndex >= observations.length && !hasMore && !loading;
 
@@ -137,12 +135,24 @@ export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Pr
                 </button>
                 <span className="text-base text-neutral-300 truncate flex-1">{locationLabel}</span>
 
-                {quizMode && scored > 0 && (
-                    <span className="text-sm text-neutral-400 whitespace-nowrap">
-                        <span className="text-green-400">✓{score.correct}</span>{" "}
-                        <span className="text-red-400">✗{score.incorrect}</span>{" "}
-                        <span className="text-yellow-400">—{score.skipped}</span>{" "}
-                        <span className="text-white">{pct}%</span>
+                {quizMode && (
+                    <span className="flex items-center gap-3 text-sm whitespace-nowrap">
+                        <span className="flex items-center gap-1" title="Correct">
+                            <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />
+                            <span className="text-neutral-300">{score.correct}</span>
+                        </span>
+                        <span className="flex items-center gap-1" title="Incorrect">
+                            <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />
+                            <span className="text-neutral-300">{score.incorrect}</span>
+                        </span>
+                        <span className="flex items-center gap-1" title="Partial">
+                            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />
+                            <span className="text-neutral-300">{score.partial}</span>
+                        </span>
+                        <span className="flex items-center gap-1" title="Skipped">
+                            <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 inline-block" />
+                            <span className="text-neutral-300">{score.skipped}</span>
+                        </span>
                     </span>
                 )}
 

@@ -70,17 +70,18 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
             if (newGuesses.length >= MAX_GUESSES) {
                 setPhase("done");
                 setRevealed(true);
-                setResultType("incorrect");
-                onOutcome("incorrect");
+                setResultType("partial");
+                onOutcome("partial");
             }
         } else {
             const newGuesses: GuessResult[] = [...guesses, "wrong"];
             setGuesses(newGuesses);
             if (newGuesses.length >= MAX_GUESSES) {
+                const outcome = partialGuesses.length > 0 ? "partial" : "incorrect";
                 setPhase("done");
                 setRevealed(true);
-                setResultType("incorrect");
-                onOutcome("incorrect");
+                setResultType(outcome);
+                onOutcome(outcome);
             }
         }
     };
@@ -99,7 +100,6 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
 
     const partialTaxonId = mostSpecificPartial?.taxon.id;
     const partialCount = partialGuesses.length;
-    const showPartialBadge = resultType === "incorrect" && partialGuesses.length > 0;
 
     return (
         <div className="h-full flex flex-col lg:flex-row">
@@ -152,7 +152,7 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
                                     className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                                         resultType === "correct"
                                             ? "bg-green-900/70 text-green-400"
-                                            : showPartialBadge
+                                            : resultType === "partial"
                                               ? "bg-blue-900/70 text-blue-400"
                                               : resultType === "incorrect"
                                                 ? "bg-red-900/70 text-red-400"
@@ -161,7 +161,7 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
                                 >
                                     {resultType === "correct"
                                         ? "Correct"
-                                        : showPartialBadge
+                                        : resultType === "partial"
                                           ? "Partial"
                                           : resultType === "incorrect"
                                             ? "Incorrect"

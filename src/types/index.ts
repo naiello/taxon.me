@@ -25,7 +25,7 @@ export interface Taxon {
 }
 
 export type GuessResult = "correct" | "wrong" | "partial";
-export type GuessRoundOutcome = "correct" | "incorrect" | "skipped";
+export type GuessRoundOutcome = "correct" | "partial" | "incorrect" | "skipped";
 export type AppMode = "browse" | "quiz";
 
 export interface ObservationUser {
