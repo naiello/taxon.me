@@ -1,8 +1,9 @@
 import {useEffect, useRef, useState} from "react";
 
 import {searchPlaces} from "../api/inaturalist";
-import type {AppMode, INaturalistUser, Place, SearchParams} from "../types";
+import type {AppMode, BoundingBox, Coordinates, INaturalistUser, MapSelectionMode, Place, SearchParams} from "../types";
 import {AboutModal} from "./AboutModal";
+import {InteractiveMap} from "./InteractiveMap";
 import {LocationMap} from "./LocationMap";
 import {UserAutocomplete} from "./UserAutocomplete";
 
@@ -25,20 +26,26 @@ interface Props {
 }
 
 export function LocationPicker({onSelect}: Props) {
-    const [mode, setMode] = useState<"search" | "gps" | "worldwide">("search");
+    const [mode, setMode] = useState<"search" | "map" | "worldwide">("search");
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<Place[]>([]);
     const [searching, setSearching] = useState(false);
     const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
     const [radius, setRadius] = useState(25);
     const [gpsStatus, setGpsStatus] = useState<"idle" | "locating" | "ready" | "error">("idle");
-    const [coords, setCoords] = useState<{lat: number; lng: number} | null>(null);
+    const [coords, setCoords] = useState<Coordinates | null>(null);
     const [gpsError, setGpsError] = useState<string | null>(null);
     const [taxonId, setTaxonId] = useState<number | undefined>(undefined);
     const [selectedUsers, setSelectedUsers] = useState<INaturalistUser[]>([]);
     const [appMode, setAppMode] = useState<AppMode>("quiz");
     const [showAbout, setShowAbout] = useState(false);
     const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+    // Map tab state
+    const [mapSelectionMode, setMapSelectionMode] = useState<MapSelectionMode>("circle");
+    const [mapCenter, setMapCenter] = useState<Coordinates | null>(null);
+    const [mapBounds, setMapBounds] = useState<BoundingBox | null>(null);
+    const [drawingEnabled, setDrawingEnabled] = useState(false);
 
     useEffect(() => {
         if (!query.trim()) {
@@ -88,7 +95,20 @@ export function LocationPicker({onSelect}: Props) {
         );
     };
 
-    const canSubmit = mode === "worldwide" ? true : mode === "search" ? selectedPlace !== null : coords !== null;
+    // When GPS becomes ready, auto-set map center and switch to circle mode
+    useEffect(() => {
+        if (gpsStatus === "ready" && coords && mode === "map") {
+            setMapCenter(coords);
+            setMapSelectionMode("circle");
+        }
+    }, [gpsStatus, coords, mode]);
+
+    const canSubmit =
+        mode === "worldwide" ||
+        (mode === "search" && selectedPlace !== null) ||
+        (mode == "map" &&
+            ((mapSelectionMode == "circle" && mapCenter !== null) ||
+                (mapSelectionMode == "rectangle" && mapBounds !== null)));
 
     const handleSubmit = () => {
         if (!canSubmit) {
@@ -113,11 +133,15 @@ export function LocationPicker({onSelect}: Props) {
                 const [lat, lng] = selectedPlace.location.split(",").map(Number);
                 onSelect({type: "gps", lat, lng, radius: 25, taxon_id: taxonId, user_ids: userIds}, appMode);
             }
-        } else if (mode === "gps" && coords) {
-            onSelect(
-                {type: "gps", lat: coords.lat, lng: coords.lng, radius, taxon_id: taxonId, user_ids: userIds},
-                appMode,
-            );
+        } else if (mode === "map") {
+            if (mapSelectionMode === "circle" && mapCenter) {
+                onSelect(
+                    {type: "gps", lat: mapCenter.lat, lng: mapCenter.lng, radius, taxon_id: taxonId, user_ids: userIds},
+                    appMode,
+                );
+            } else if (mapSelectionMode === "rectangle" && mapBounds) {
+                onSelect({type: "bbox", ...mapBounds, taxon_id: taxonId, user_ids: userIds}, appMode);
+            }
         }
     };
 
@@ -137,12 +161,12 @@ export function LocationPicker({onSelect}: Props) {
                     Search Place
                 </button>
                 <button
-                    onClick={() => setMode("gps")}
+                    onClick={() => setMode("map")}
                     className={`px-4 py-2.5 rounded-md text-base font-medium transition-colors cursor-pointer ${
-                        mode === "gps" ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white"
+                        mode === "map" ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white"
                     }`}
                 >
-                    Nearby
+                    Map
                 </button>
                 <button
                     onClick={() => setMode("worldwide")}
@@ -196,46 +220,115 @@ export function LocationPicker({onSelect}: Props) {
                         )}
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center gap-4">
-                        {gpsStatus === "idle" && (
-                            <button
-                                onClick={handleGps}
-                                className="px-6 py-3 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg font-medium text-base transition-colors cursor-pointer"
-                            >
-                                Use My Location
-                            </button>
-                        )}
-                        {gpsStatus === "locating" && <p className="text-neutral-400">Getting your location...</p>}
-                        {gpsStatus === "error" && (
-                            <div className="text-center">
-                                <p className="text-red-400 mb-2">{gpsError}</p>
+                    <div className="space-y-4">
+                        {/* Map selection mode toggle + Use My Location */}
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="flex gap-1 bg-neutral-800 rounded-lg p-1">
                                 <button
-                                    onClick={handleGps}
-                                    className="px-5 py-2.5 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg text-base cursor-pointer"
+                                    onClick={() => {
+                                        setMapSelectionMode("circle");
+                                        setDrawingEnabled(false);
+                                    }}
+                                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                                        mapSelectionMode === "circle"
+                                            ? "bg-neutral-600 text-white"
+                                            : "text-neutral-400 hover:text-white"
+                                    }`}
                                 >
-                                    Try Again
+                                    Circle
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setMapSelectionMode("rectangle");
+                                        setDrawingEnabled(true);
+                                    }}
+                                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                                        mapSelectionMode === "rectangle"
+                                            ? "bg-neutral-600 text-white"
+                                            : "text-neutral-400 hover:text-white"
+                                    }`}
+                                >
+                                    Rectangle
                                 </button>
                             </div>
+                            <button
+                                onClick={handleGps}
+                                disabled={gpsStatus === "locating"}
+                                className="px-3 py-1.5 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer disabled:cursor-default"
+                            >
+                                {gpsStatus === "locating" ? "Locating..." : "Use My Location"}
+                            </button>
+                        </div>
+
+                        {/* GPS error */}
+                        {gpsStatus === "error" && <p className="text-red-400 text-sm">{gpsError}</p>}
+
+                        {/* Draw/Pan toggle for rectangle mode */}
+                        {mapSelectionMode === "rectangle" && (
+                            <div className="flex items-center gap-2">
+                                <div className="flex gap-1 bg-neutral-800 rounded-lg p-1">
+                                    <button
+                                        onClick={() => setDrawingEnabled(true)}
+                                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                                            drawingEnabled
+                                                ? "bg-blue-600 text-white"
+                                                : "text-neutral-400 hover:text-white"
+                                        }`}
+                                    >
+                                        Draw
+                                    </button>
+                                    <button
+                                        onClick={() => setDrawingEnabled(false)}
+                                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                                            !drawingEnabled
+                                                ? "bg-blue-600 text-white"
+                                                : "text-neutral-400 hover:text-white"
+                                        }`}
+                                    >
+                                        Pan
+                                    </button>
+                                </div>
+                                <span className="text-neutral-500 text-xs">
+                                    {drawingEnabled
+                                        ? "Drag to draw a rectangle"
+                                        : "Drag to move the map. Shift+drag to draw a rectangle"}
+                                </span>
+                            </div>
                         )}
-                        {gpsStatus === "ready" && coords && (
-                            <div className="w-full space-y-4">
-                                <p className="text-neutral-400 text-center text-sm">
-                                    {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
-                                </p>
-                                <div>
-                                    <label className="block text-sm text-neutral-400 mb-1">Radius: {radius} km</label>
-                                    <input
-                                        type="range"
-                                        min={5}
-                                        max={100}
-                                        value={radius}
-                                        onChange={(e) => setRadius(Number(e.target.value))}
-                                        className="w-full"
-                                    />
-                                    <div className="flex justify-between text-xs text-neutral-500">
-                                        <span>5 km</span>
-                                        <span>100 km</span>
-                                    </div>
+
+                        {/* Hint text (circle mode only — rectangle hints are next to the Draw/Pan toggle) */}
+                        {mapSelectionMode === "circle" && (
+                            <p className="text-neutral-500 text-xs text-center">Click the map to set a center point</p>
+                        )}
+
+                        {/* Interactive map */}
+                        <InteractiveMap
+                            mode={mapSelectionMode}
+                            center={mapCenter}
+                            radiusKm={radius}
+                            onCenterChange={setMapCenter}
+                            onRadiusChange={setRadius}
+                            bounds={mapBounds}
+                            onBoundsChange={setMapBounds}
+                            drawingEnabled={drawingEnabled}
+                            onDrawComplete={() => setDrawingEnabled(false)}
+                        />
+
+                        {/* Radius slider (circle mode only) */}
+                        {mapSelectionMode === "circle" && (
+                            <div>
+                                <label className="block text-sm text-neutral-400 mb-1">Radius: {radius} km</label>
+                                <input
+                                    type="range"
+                                    min={5}
+                                    max={1000}
+                                    value={radius}
+                                    onChange={(e) => setRadius(Number(e.target.value))}
+                                    className="w-full"
+                                />
+                                <div className="flex justify-between text-xs text-neutral-500">
+                                    <span>5 km</span>
+                                    <span>1000 km</span>
                                 </div>
                             </div>
                         )}
@@ -243,7 +336,7 @@ export function LocationPicker({onSelect}: Props) {
                 )}
             </div>
 
-            {/* Map preview */}
+            {/* Map preview for Search Place */}
             {!showAbout && mode === "search" && selectedPlace && (
                 <div className="w-full max-w-md mt-4">
                     <LocationMap
@@ -258,11 +351,6 @@ export function LocationPicker({onSelect}: Props) {
                         }
                         radiusKm={!selectedPlace.geometry_geojson ? 25 : undefined}
                     />
-                </div>
-            )}
-            {!showAbout && mode === "gps" && coords && (
-                <div className="w-full max-w-md mt-4">
-                    <LocationMap center={coords} radiusKm={radius} />
                 </div>
             )}
 

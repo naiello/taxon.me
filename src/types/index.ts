@@ -73,7 +73,22 @@ export interface INaturalistUser {
     observations_count?: number;
 }
 
+export type MapSelectionMode = "circle" | "rectangle";
+
+export interface Coordinates {
+    lat: number;
+    lng: number;
+}
+
+export interface BoundingBox {
+    nelat: number;
+    nelng: number;
+    swlat: number;
+    swlng: number;
+}
+
 export type SearchParams =
     | {type: "place"; place_id: number; place_name: string; taxon_id?: number; user_ids?: number[]}
     | {type: "gps"; lat: number; lng: number; radius: number; taxon_id?: number; user_ids?: number[]}
+    | ({type: "bbox"; taxon_id?: number; user_ids?: number[]} & BoundingBox)
     | {type: "worldwide"; taxon_id?: number; user_ids?: number[]};

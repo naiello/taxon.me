@@ -27,7 +27,9 @@ export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Pr
             ? searchParams.place_name
             : searchParams.type === "gps"
               ? `${searchParams.lat.toFixed(3)}, ${searchParams.lng.toFixed(3)} (${searchParams.radius} km)`
-              : "Worldwide";
+              : searchParams.type === "bbox"
+                ? "Map area"
+                : "Worldwide";
 
     const handleScroll = useCallback(() => {
         if (quizMode) {

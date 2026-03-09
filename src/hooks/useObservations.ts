@@ -62,7 +62,17 @@ export function useObservations(searchParams: SearchParams | null): UseObservati
                                 user_id: userIdParam,
                                 page: pageNum,
                             }
-                          : {taxon_id: searchParams.taxon_id, user_id: userIdParam, page: pageNum};
+                          : searchParams.type === "bbox"
+                            ? {
+                                  nelat: searchParams.nelat,
+                                  nelng: searchParams.nelng,
+                                  swlat: searchParams.swlat,
+                                  swlng: searchParams.swlng,
+                                  taxon_id: searchParams.taxon_id,
+                                  user_id: userIdParam,
+                                  page: pageNum,
+                              }
+                            : {taxon_id: searchParams.taxon_id, user_id: userIdParam, page: pageNum};
 
                 const result = await fetchObservations(apiParams);
                 setObservations((prev) =>

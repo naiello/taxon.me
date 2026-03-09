@@ -138,6 +138,10 @@ interface FetchObservationsParams {
     lat?: number;
     lng?: number;
     radius?: number;
+    nelat?: number;
+    nelng?: number;
+    swlat?: number;
+    swlng?: number;
     taxon_id?: number;
     user_id?: string;
     page?: number;
@@ -196,6 +200,11 @@ export async function fetchObservations(params: FetchObservationsParams): Promis
         searchParams.set("lat", String(params.lat));
         searchParams.set("lng", String(params.lng));
         searchParams.set("radius", String(params.radius ?? 25));
+    } else if (params.nelat != null && params.nelng != null && params.swlat != null && params.swlng != null) {
+        searchParams.set("nelat", String(params.nelat));
+        searchParams.set("nelng", String(params.nelng));
+        searchParams.set("swlat", String(params.swlat));
+        searchParams.set("swlng", String(params.swlng));
     }
 
     if (params.taxon_id) {
