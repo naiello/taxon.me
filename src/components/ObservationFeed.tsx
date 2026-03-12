@@ -3,6 +3,7 @@ import {useCallback, useEffect, useRef, useState} from "react";
 import {useObservations} from "../hooks/useObservations";
 import type {AppMode, GuessRoundOutcome, SearchParams} from "../types";
 import {AboutModal} from "./AboutModal";
+import {ObservationMap} from "./ObservationMap";
 import {PhotoCarousel} from "./PhotoCarousel";
 import {QuizCard} from "./QuizCard";
 import {TaxonLineage} from "./TaxonLineage";
@@ -21,6 +22,7 @@ export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Pr
     const [quizIndex, setQuizIndex] = useState(0);
     const [score, setScore] = useState({correct: 0, partial: 0, incorrect: 0, skipped: 0});
     const [showAbout, setShowAbout] = useState(false);
+    const [showBrowseMap, setShowBrowseMap] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
 
     const locationLabel =
         searchParams.type === "place"
@@ -262,48 +264,124 @@ export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Pr
                             <PhotoCarousel photos={obs.photos} />
                         </div>
 
+                        {/* Map overlay — desktop only */}
+                        {obs.location && (
+                            <div className="hidden lg:block absolute bottom-16 right-3 z-[40]">
+                                {showBrowseMap ? (
+                                    <div className="relative group/map">
+                                        <ObservationMap
+                                            observation={obs}
+                                            className="h-40 w-48 group-hover/map:h-72 group-hover/map:w-80 transition-all duration-200 rounded-lg border border-neutral-700 shadow-lg"
+                                        />
+                                        <button
+                                            onClick={() => setShowBrowseMap(false)}
+                                            className="absolute top-1 right-1 z-[1000] w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center text-xs cursor-pointer"
+                                            aria-label="Close map"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={() => setShowBrowseMap(true)}
+                                        className="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center cursor-pointer"
+                                        aria-label="Show map"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                        >
+                                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                        </svg>
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
                         {/* Info panel — below photo on mobile, overlay on desktop */}
                         <div
                             className="shrink-0 overflow-y-auto bg-neutral-900 px-4 py-3 pb-6 lg:pb-8 lg:overflow-y-visible lg:absolute lg:bottom-0 lg:left-0 lg:right-0 lg:bg-transparent lg:bg-gradient-to-t lg:from-black/80 lg:via-black/40 lg:to-transparent lg:pt-16"
                             style={{maxHeight: "40dvh"}}
                         >
-                            {obs.taxon && (
-                                <>
-                                    {obs.taxon.preferred_common_name && (
-                                        <h2 className="text-xl font-bold text-white">
+                            <div className="flex gap-3 items-end">
+                                <div className="flex-1 min-w-0">
+                                    {obs.taxon && (
+                                        <>
+                                            {obs.taxon.preferred_common_name && (
+                                                <h2 className="text-xl font-bold text-white">
+                                                    <a
+                                                        href={`https://www.inaturalist.org/observations/${obs.id}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="hover:text-neutral-200 transition-colors"
+                                                    >
+                                                        {obs.taxon.preferred_common_name}
+                                                    </a>
+                                                </h2>
+                                            )}
+                                            <p className="text-neutral-300 italic text-sm">{obs.taxon.name}</p>
+                                            {obs.taxon.ancestors && (
+                                                <TaxonLineage
+                                                    ancestors={obs.taxon.ancestors}
+                                                    className="text-neutral-400 mt-0.5"
+                                                />
+                                            )}
+                                        </>
+                                    )}
+                                    {obs.place_guess && (
+                                        <p className="text-neutral-400 text-xs mt-1">{obs.place_guess}</p>
+                                    )}
+                                    {obs.user && (
+                                        <p className="text-neutral-500 text-xs mt-1 flex items-center gap-2">
                                             <a
-                                                href={`https://www.inaturalist.org/observations/${obs.id}`}
+                                                href={`https://www.inaturalist.org/people/${obs.user.login}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="hover:text-neutral-200 transition-colors"
+                                                className="hover:text-neutral-300 transition-colors"
                                             >
-                                                {obs.taxon.preferred_common_name}
+                                                @{obs.user.login}
                                             </a>
-                                        </h2>
+                                            {obs.observed_on_string && <span>{obs.observed_on_string}</span>}
+                                        </p>
                                     )}
-                                    <p className="text-neutral-300 italic text-sm">{obs.taxon.name}</p>
-                                    {obs.taxon.ancestors && (
-                                        <TaxonLineage
-                                            ancestors={obs.taxon.ancestors}
-                                            className="text-neutral-400 mt-0.5"
+                                </div>
+                                {/* Map — inline on mobile */}
+                                {obs.location && showBrowseMap && (
+                                    <div className="shrink-0 lg:hidden relative">
+                                        <ObservationMap
+                                            observation={obs}
+                                            className="h-32 w-40 rounded-lg border border-neutral-700 shadow-lg"
                                         />
-                                    )}
-                                </>
-                            )}
-                            {obs.place_guess && <p className="text-neutral-400 text-xs mt-1">{obs.place_guess}</p>}
-                            {obs.user && (
-                                <p className="text-neutral-500 text-xs mt-1 flex items-center gap-2">
-                                    <a
-                                        href={`https://www.inaturalist.org/people/${obs.user.login}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="hover:text-neutral-300 transition-colors"
+                                        <button
+                                            onClick={() => setShowBrowseMap(false)}
+                                            className="absolute top-1 right-1 z-[1000] w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center text-xs cursor-pointer"
+                                            aria-label="Close map"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                )}
+                                {obs.location && !showBrowseMap && (
+                                    <button
+                                        onClick={() => setShowBrowseMap(true)}
+                                        className="shrink-0 lg:hidden w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center cursor-pointer"
+                                        aria-label="Show map"
                                     >
-                                        @{obs.user.login}
-                                    </a>
-                                    {obs.observed_on_string && <span>{obs.observed_on_string}</span>}
-                                </p>
-                            )}
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                        >
+                                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                        </svg>
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 ))}

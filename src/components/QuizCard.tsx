@@ -1,6 +1,7 @@
 import {useEffect, useState} from "react";
 
 import type {GuessResult, GuessRoundOutcome, Observation, PartialGuessRecord, TaxonSuggestion} from "../types";
+import {ObservationMap} from "./ObservationMap";
 import {PhotoCarousel} from "./PhotoCarousel";
 import {TaxonAutocomplete} from "./TaxonAutocomplete";
 import {TaxonLineage} from "./TaxonLineage";
@@ -24,6 +25,7 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
     const [phase, setPhase] = useState<Phase>("guessing");
     const [resultType, setResultType] = useState<GuessRoundOutcome | null>(null);
     const [historyExpanded, setHistoryExpanded] = useState(false);
+    const [showMap, setShowMap] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
 
     // Skip observations with no taxon
     useEffect(() => {
@@ -278,20 +280,59 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
                     )}
                 </div>
 
-                {/* Observer */}
-                {observation.user && (
-                    <p className="text-neutral-500 text-xs text-center flex items-center justify-center gap-2">
-                        <a
-                            href={`https://www.inaturalist.org/people/${observation.user.login}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-neutral-300 transition-colors"
-                        >
-                            @{observation.user.login}
-                        </a>
-                        {observation.observed_on_string && <span>{observation.observed_on_string}</span>}
-                    </p>
-                )}
+                {/* Observer + location + map */}
+                <div className="flex flex-col gap-2">
+                    {observation.user && (
+                        <p className="text-neutral-500 text-xs text-center flex items-center justify-center gap-2">
+                            <a
+                                href={`https://www.inaturalist.org/people/${observation.user.login}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:text-neutral-300 transition-colors"
+                            >
+                                @{observation.user.login}
+                            </a>
+                            {observation.observed_on_string && <span>{observation.observed_on_string}</span>}
+                        </p>
+                    )}
+                    {observation.location && (
+                        <div className="flex flex-col items-center gap-1">
+                            <button
+                                onClick={() => setShowMap((s) => !s)}
+                                className="text-neutral-500 hover:text-neutral-300 text-xs transition-colors cursor-pointer flex items-center gap-1"
+                            >
+                                {showMap ? "Hide location" : "Show location"}
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="12"
+                                    height="12"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className={`transition-transform ${showMap ? "rotate-180" : ""}`}
+                                >
+                                    <polyline points="6 9 12 15 18 9" />
+                                </svg>
+                            </button>
+                            {showMap && (
+                                <>
+                                    {observation.place_guess && (
+                                        <p className="text-neutral-500 text-xs text-center">
+                                            {observation.place_guess}
+                                        </p>
+                                    )}
+                                    <ObservationMap
+                                        observation={observation}
+                                        className="h-40 w-full lg:aspect-square lg:h-auto rounded-lg border border-neutral-700"
+                                    />
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -56,6 +56,8 @@ interface ApiObservationResult {
     place_guess?: string;
     location?: string;
     observed_on_string?: string;
+    obscured?: boolean;
+    public_positional_accuracy?: number;
     annotations?: ApiAnnotation[];
 }
 
@@ -284,6 +286,8 @@ function mapObservation(raw: ApiObservationResult): Observation {
         place_guess: raw.place_guess,
         location: raw.location,
         observed_on_string: raw.observed_on_string,
+        obscured: raw.obscured,
+        public_positional_accuracy: raw.public_positional_accuracy,
     };
 }
 

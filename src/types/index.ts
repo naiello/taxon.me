@@ -41,6 +41,8 @@ export interface Observation {
     place_guess?: string;
     location?: string;
     observed_on_string?: string;
+    obscured?: boolean;
+    public_positional_accuracy?: number;
 }
 
 export interface Place {
