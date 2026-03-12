@@ -129,7 +129,7 @@ export function TaxonAutocomplete({
             />
             {/* Dropdown below input */}
             {showDropdown && (
-                <div className="absolute bottom-full left-0 right-0 mb-1 lg:bottom-auto lg:top-full lg:mb-0 lg:mt-1 z-10 bg-neutral-800 border border-neutral-700 rounded-lg overflow-hidden max-h-64 overflow-y-auto">
+                <div className="absolute bottom-full left-0 right-0 mb-1 lg:bottom-auto lg:top-full lg:mb-0 lg:mt-1 z-[1000] bg-neutral-800 border border-neutral-700 rounded-lg overflow-hidden max-h-64 overflow-y-auto">
                     {results.map((taxon) => (
                         <button
                             key={taxon.id}
