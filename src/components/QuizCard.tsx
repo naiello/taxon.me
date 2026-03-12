@@ -114,6 +114,7 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
 
     const partialTaxonId = mostSpecificPartial?.taxon.id;
     const partialCount = partialGuesses.length;
+    const taxonDisplayedName = taxon.preferred_common_name ?? taxon.name;
 
     return (
         <div className="h-full flex flex-col lg:flex-row">
@@ -150,7 +151,7 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
                         {/* Species info with result badge */}
                         <div className="text-center">
                             <div className="flex items-center justify-center gap-2 flex-wrap">
-                                {taxon.preferred_common_name && (
+                                {taxonDisplayedName && (
                                     <h3 className="text-lg font-bold text-white">
                                         <a
                                             href={`https://www.inaturalist.org/observations/${observation.id}`}
@@ -158,7 +159,7 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
                                             rel="noopener noreferrer"
                                             className="hover:text-neutral-200 transition-colors"
                                         >
-                                            {taxon.preferred_common_name}
+                                            {taxonDisplayedName}
                                         </a>
                                     </h3>
                                 )}
