@@ -39,6 +39,9 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
 
     const taxon = observation.taxon;
 
+    const acceptableTaxa = taxon.ancestors?.filter((t) => t.rank === "species").map((t) => t.id) ?? [];
+    acceptableTaxa.push(taxon.id); // make sure the taxon itself is always accepted even if ancestors is empty
+
     const resolveTaxon = (suggestion: TaxonSuggestion | null, rawText: string): TaxonSuggestion | null => {
         if (suggestion !== null) {
             return suggestion;
@@ -58,7 +61,7 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
         const resolved = resolveTaxon(suggestion, rawText);
         const label = resolved ? resolved.preferred_common_name || resolved.name : rawText.trim();
 
-        const isCorrect = resolved?.id === taxon.id;
+        const isCorrect = resolved !== null && acceptableTaxa.includes(resolved.id);
 
         if (isCorrect) {
             setGuesses((prev) => [...prev, "correct"]);
