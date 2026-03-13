@@ -1,7 +1,7 @@
 import _ from "lodash";
 import {useCallback, useState} from "react";
 
-import {fetchObservations} from "../api/inaturalist";
+import {type FetchObservationsParams, fetchObservations} from "../api/inaturalist";
 import type {Observation, SearchParams} from "../types";
 
 interface UseObservationsReturn {
@@ -43,37 +43,7 @@ export function useObservations(searchParams: SearchParams | null): UseObservati
             setLoading(true);
             setError(null);
             try {
-                const userIdParam = searchParams.user_ids?.length ? searchParams.user_ids.join(",") : undefined;
-
-                const apiParams =
-                    searchParams.type === "place"
-                        ? {
-                              place_id: searchParams.place_id,
-                              taxon_id: searchParams.taxon_id,
-                              user_id: userIdParam,
-                              page: pageNum,
-                          }
-                        : searchParams.type === "gps"
-                          ? {
-                                lat: searchParams.lat,
-                                lng: searchParams.lng,
-                                radius: searchParams.radius,
-                                taxon_id: searchParams.taxon_id,
-                                user_id: userIdParam,
-                                page: pageNum,
-                            }
-                          : searchParams.type === "bbox"
-                            ? {
-                                  nelat: searchParams.nelat,
-                                  nelng: searchParams.nelng,
-                                  swlat: searchParams.swlat,
-                                  swlng: searchParams.swlng,
-                                  taxon_id: searchParams.taxon_id,
-                                  user_id: userIdParam,
-                                  page: pageNum,
-                              }
-                            : {taxon_id: searchParams.taxon_id, user_id: userIdParam, page: pageNum};
-
+                const apiParams = makeFetchObservationsParams(searchParams, pageNum);
                 const result = await fetchObservations(apiParams);
                 setObservations((prev) =>
                     append ? [...prev, ..._.shuffle(result.observations)] : _.shuffle(result.observations),
@@ -105,4 +75,37 @@ export function useObservations(searchParams: SearchParams | null): UseObservati
     }, [hasMore, loading, load, page]);
 
     return {observations, loading, error, hasMore, loadMore};
+}
+
+function makeFetchObservationsParams(searchParams: SearchParams, pageNum: number): FetchObservationsParams {
+    const userIdParam = searchParams.user_ids?.length ? searchParams.user_ids.join(",") : undefined;
+    if (searchParams.type === "place") {
+        return {
+            place_id: searchParams.place_id,
+            taxon_id: searchParams.taxon_id,
+            user_id: userIdParam,
+            page: pageNum,
+        };
+    } else if (searchParams.type === "gps") {
+        return {
+            lat: searchParams.lat,
+            lng: searchParams.lng,
+            radius: searchParams.radius,
+            taxon_id: searchParams.taxon_id,
+            user_id: userIdParam,
+            page: pageNum,
+        };
+    } else if (searchParams.type === "bbox") {
+        return {
+            nelat: searchParams.nelat,
+            nelng: searchParams.nelng,
+            swlat: searchParams.swlat,
+            swlng: searchParams.swlng,
+            taxon_id: searchParams.taxon_id,
+            user_id: userIdParam,
+            page: pageNum,
+        };
+    } else {
+        return {taxon_id: searchParams.taxon_id, user_id: userIdParam, page: pageNum};
+    }
 }

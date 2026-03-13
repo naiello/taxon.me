@@ -135,7 +135,7 @@ export async function searchUsers(query: string): Promise<INaturalistUser[]> {
     }));
 }
 
-interface FetchObservationsParams {
+export interface FetchObservationsParams {
     place_id?: number;
     lat?: number;
     lng?: number;
