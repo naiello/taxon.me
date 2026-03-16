@@ -144,19 +144,19 @@ export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Pr
                     {quizMode && (
                         <span className="flex items-center gap-3 text-sm whitespace-nowrap sm:hidden">
                             <span className="flex items-center gap-1" title="Correct">
-                                <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><polyline points="20 6 9 17 4 12" /></svg>
                                 <span className="text-neutral-300">{score.correct}</span>
                             </span>
                             <span className="flex items-center gap-1" title="Incorrect">
-                                <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                                 <span className="text-neutral-300">{score.incorrect}</span>
                             </span>
                             <span className="flex items-center gap-1" title="Partial">
-                                <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" /></svg>
                                 <span className="text-neutral-300">{score.partial}</span>
                             </span>
                             <span className="flex items-center gap-1" title="Skipped">
-                                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 inline-block" />
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-500"><polygon points="2 5 12 12 2 19" /><polygon points="12 5 22 12 12 19" /></svg>
                                 <span className="text-neutral-300">{score.skipped}</span>
                             </span>
                         </span>
@@ -166,19 +166,19 @@ export function ObservationFeed({searchParams, initialMode = "quiz", onBack}: Pr
                 {quizMode && (
                     <span className="hidden sm:flex items-center gap-3 text-sm whitespace-nowrap">
                         <span className="flex items-center gap-1" title="Correct">
-                            <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><polyline points="20 6 9 17 4 12" /></svg>
                             <span className="text-neutral-300">{score.correct}</span>
                         </span>
                         <span className="flex items-center gap-1" title="Incorrect">
-                            <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                             <span className="text-neutral-300">{score.incorrect}</span>
                         </span>
                         <span className="flex items-center gap-1" title="Partial">
-                            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" /></svg>
                             <span className="text-neutral-300">{score.partial}</span>
                         </span>
                         <span className="flex items-center gap-1" title="Skipped">
-                            <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 inline-block" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-500"><polygon points="2 5 12 12 2 19" /><polygon points="12 5 22 12 12 19" /></svg>
                             <span className="text-neutral-300">{score.skipped}</span>
                         </span>
                     </span>

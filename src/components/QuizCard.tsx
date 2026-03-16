@@ -223,15 +223,23 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
                         <span className="text-neutral-400 text-sm">Guesses:</span>
                         {GUESS_SLOT_KEYS.map((slotKey, i) => {
                             const guess = guesses[i];
-                            let color = "bg-neutral-600";
                             if (guess === "correct") {
-                                color = "bg-green-500";
+                                return (
+                                    <svg key={slotKey} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><polyline points="20 6 9 17 4 12" /></svg>
+                                );
                             } else if (guess === "wrong") {
-                                color = "bg-red-500";
+                                return (
+                                    <svg key={slotKey} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                );
                             } else if (guess === "partial") {
-                                color = "bg-blue-500";
+                                return (
+                                    <svg key={slotKey} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" /></svg>
+                                );
+                            } else {
+                                return (
+                                    <svg key={slotKey} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-600"><circle cx="12" cy="12" r="8" /></svg>
+                                );
                             }
-                            return <div key={slotKey} className={`w-4 h-4 rounded-full ${color}`} />;
                         })}
                         {guesses.length > 0 && (
                             <button
@@ -262,15 +270,17 @@ export function QuizCard({observation, onOutcome, onNext}: Props) {
                         <div className={`mt-2 flex justify-center ${historyExpanded ? "" : "hidden"} lg:flex`}>
                             <div className="flex flex-col gap-1">
                                 {guesses.map((guess, i) => {
-                                    let dotColor = "bg-red-500";
+                                    let icon: React.ReactNode;
                                     if (guess === "correct") {
-                                        dotColor = "bg-green-500";
+                                        icon = <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-green-500 shrink-0"><polyline points="20 6 9 17 4 12" /></svg>;
                                     } else if (guess === "partial") {
-                                        dotColor = "bg-blue-500";
+                                        icon = <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500 shrink-0"><line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" /></svg>;
+                                    } else {
+                                        icon = <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-red-500 shrink-0"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>;
                                     }
                                     return (
                                         <div key={GUESS_SLOT_KEYS[i]} className="flex items-center gap-2 text-sm">
-                                            <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} />
+                                            {icon}
                                             <span className="text-neutral-300 truncate">{guessLabels[i]}</span>
                                         </div>
                                     );
